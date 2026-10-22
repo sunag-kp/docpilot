@@ -3,6 +3,9 @@
 Locally: `make test` starts the docker-compose infrastructure first. If it is not
 reachable, integration tests are skipped with a hint — except in CI (CI=true), where an
 unreachable dependency must fail the build instead of silently skipping.
+
+Tests use their own database (``<name>_test``) on the same server, so a running dev stack
+never sees test rows (its stale-document sweeper would otherwise re-publish them).
 """
 
 from __future__ import annotations
@@ -18,7 +21,9 @@ from uuid import uuid4
 import pytest
 from alembic import command
 from alembic.config import Config
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy import text
+from sqlalchemy.engine import make_url
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from docpilot.config import EmbeddingProvider, Environment, Settings
 from docpilot.infra.db.engine import create_engine
@@ -27,6 +32,8 @@ from docpilot.services.ports import UnitOfWork
 
 ROOT = Path(__file__).resolve().parents[2]
 RUN_ID = uuid4().hex[:8]  # isolates Kafka topics / groups / buckets per test session
+_BASE_URL = Settings(_env_file=None).database_url  # type: ignore[call-arg]
+TEST_DATABASE_URL = make_url(_BASE_URL).set(database=f"{make_url(_BASE_URL).database}_test")
 
 
 def integration_settings(**overrides: object) -> Settings:
@@ -40,6 +47,7 @@ def integration_settings(**overrides: object) -> Settings:
         "kafka_consumer_group": f"test-{RUN_ID}",
         "kafka_topic_partitions": 3,
         "s3_bucket": f"test-{RUN_ID}",
+        "database_url": TEST_DATABASE_URL.render_as_string(hide_password=False),
     }
     base.update(overrides)
     return Settings(_env_file=None, **base)  # type: ignore[arg-type]
@@ -70,13 +78,32 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 @pytest.fixture
-def settings() -> Settings:
+def settings(migrated: None) -> Settings:
     return integration_settings()
+
+
+async def _create_test_database() -> None:
+    admin = create_async_engine(_BASE_URL, isolation_level="AUTOCOMMIT")
+    try:
+        async with admin.connect() as conn:
+            exists = await conn.scalar(
+                text("SELECT 1 FROM pg_database WHERE datname = :name"),
+                {"name": TEST_DATABASE_URL.database},
+            )
+            if not exists:
+                await conn.execute(text(f'CREATE DATABASE "{TEST_DATABASE_URL.database}"'))
+    finally:
+        await admin.dispose()
 
 
 @pytest.fixture(scope="session")
 async def migrated() -> None:
+    await _create_test_database()
     config = Config(str(ROOT / "alembic.ini"))
+    config.set_main_option(
+        "sqlalchemy.url",
+        TEST_DATABASE_URL.render_as_string(hide_password=False).replace("%", "%%"),
+    )
     # Alembic's env.py calls asyncio.run(); give it a thread with no running loop.
     await asyncio.to_thread(command.upgrade, config, "head")
 
