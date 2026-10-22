@@ -23,7 +23,7 @@ on:
         default: llama3.1:8b
 
 permissions:
-  contents: read
+  contents: write  # results are published to the `eval-results` branch
 
 concurrency:
   group: eval-${{ github.ref }}
@@ -58,6 +58,8 @@ jobs:
       - run: cat eval/results/ci-offline.md >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with: {name: eval-offline, path: eval/results/ci-offline.*}
+      - name: Publish to the eval-results branch
+        run: scripts/publish_eval_results.sh eval/results/ci-offline.md eval/results/ci-offline.json
 
   llm:
     name: LLM eval (Ollama generator + LLM-as-judge)
@@ -69,9 +71,6 @@ jobs:
         env: {POSTGRES_USER: docpilot, POSTGRES_PASSWORD: docpilot, POSTGRES_DB: docpilot}
         ports: ["5432:5432"]
         options: --health-cmd "pg_isready -U docpilot" --health-interval 3s --health-retries 20
-      ollama:
-        image: ollama/ollama:0.40.8
-        ports: ["11434:11434"]
     env:
       GENERATOR: ${{ inputs.generator_model || 'qwen2.5:3b' }}
       JUDGE: ${{ inputs.judge_model || 'llama3.1:8b' }}
@@ -86,6 +85,13 @@ jobs:
         with:
           path: .models
           key: models-${{ hashFiles('src/docpilot/infra/embeddings/model_download.py') }}
+      # Started with docker run rather than as a service container: the runner dumps a
+      # service container's entire log into the job log, burying the results.
+      - name: Start Ollama
+        run: |
+          docker run -d --name ollama -p 11434:11434 ollama/ollama:0.40.8
+          for i in $(seq 1 30); do curl -fsS http://localhost:11434/api/version && exit 0; sleep 1; done
+          exit 1
       - name: Pull open-weights models
         run: |
           for model in "$GENERATOR" "$JUDGE"; do
@@ -97,8 +103,8 @@ jobs:
           uv run python eval/run_eval.py --llm ollama --llm-model "$GENERATOR" \
             --judge ollama --judge-model "$JUDGE" --label ci-ollama
       - name: Print results
-        run: |
-          cat eval/results/ci-ollama.md | tee -a "$GITHUB_STEP_SUMMARY"
-          echo "::group::per-question results"; cat eval/results/ci-ollama.json; echo "::endgroup::"
+        run: cat eval/results/ci-ollama.md | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with: {name: eval-ollama, path: eval/results/ci-ollama.*}
+      - name: Publish to the eval-results branch
+        run: scripts/publish_eval_results.sh eval/results/ci-ollama.md eval/results/ci-ollama.json
