@@ -6,6 +6,8 @@ on:
   push:
     paths:
       - "eval/**"
+      - "!eval/results/**"  # committing results or docs doesn't need a new run
+      - "!eval/README.md"
       - "src/docpilot/domain/**"
       - "src/docpilot/evaluation/**"
       - "src/docpilot/services/retrieval.py"
