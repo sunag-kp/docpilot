@@ -1,0 +1,21 @@
+{
+  "window": "2m",
+  "stages": {
+    "embed_query": {
+      "p50_ms": 1722.1,
+      "p95_ms": 2425.1
+    },
+    "keyword_search": {
+      "p50_ms": 17.4,
+      "p95_ms": 54.9
+    },
+    "vector_search": {
+      "p50_ms": 24.7,
+      "p95_ms": 91.1
+    },
+    "generate": {
+      "p50_ms": 1752.1,
+      "p95_ms": 2441.9
+    }
+  }
+}

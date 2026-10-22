@@ -1,0 +1,15 @@
+{
+  "documents_uploaded": 1492,
+  "documents_ready": 1492,
+  "documents_failed": 0,
+  "chunks": 5968,
+  "wall_seconds": 209.95,
+  "docs_per_minute": 426.4,
+  "upload_to_ready_seconds_p50": 91.051,
+  "upload_to_ready_seconds_p95": 148.402,
+  "by_kind": {
+    "markdown": 498,
+    "pdf": 497,
+    "docx": 497
+  }
+}
