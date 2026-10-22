@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-22T13:10:29+00:00",
+  "generated_at": "2026-10-22T13:39:51+00:00",
   "config": {
     "embedding": "fastembed:sentence-transformers/all-MiniLM-L6-v2",
     "llm": "ollama:qwen2.5:3b",
@@ -22,7 +22,7 @@
   "ingestion": {
     "documents": 8,
     "chunks": 44,
-    "seconds": 0.94,
+    "seconds": 2.22,
     "formats": [
       "docx",
       "markdown",
@@ -79,15 +79,15 @@
     }
   },
   "answers": {
-    "fact_recall": 0.917,
+    "fact_recall": 0.938,
     "false_refusal_rate": 0.062,
     "correct_refusal_rate": 0.875,
     "citation_validity": 1.0,
-    "faithfulness": 0.663,
+    "faithfulness": 0.902,
     "faithfulness_judged": 46,
     "faithfulness_unparseable": 0,
-    "latency_ms_p50": 14558.9,
-    "latency_ms_p95": 19566.4
+    "latency_ms_p50": 8763.6,
+    "latency_ms_p95": 12424.1
   },
   "questions": [
     {
@@ -105,8 +105,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: Full-time employees accrue 1.75 days of paid time off for every month of service",
-      "latency_ms": 30629.1
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 22469.6
     },
     {
       "id": "pto-carryover",
@@ -122,9 +122,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: You may carry over up to 8 unused PTO days into the next calendar year.\nUNSUPPORTED: Carried-over days expire on March 31 if they have not been used by then.",
-      "latency_ms": 18714.8
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED\n2: SUPPORTED",
+      "latency_ms": 11886.2
     },
     {
       "id": "pto-notice",
@@ -140,9 +140,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: Requests for more than five consecutive days must be submitted at least three weeks in advance.",
-      "latency_ms": 13129.0
+      "faithfulness": 0.0,
+      "judge_raw": "1: UNSUPPORTED",
+      "latency_ms": 8239.4
     },
     {
       "id": "sick-days",
@@ -158,9 +158,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Employees receive 12 paid sick days per calendar year.\n\nUNSUPPORTED: Employees receive 12 paid sick days per calendar year.",
-      "latency_ms": 17615.5
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 10779.0
     },
     {
       "id": "doctor-note",
@@ -172,13 +172,13 @@
         "vector": 1,
         "keyword": null
       },
-      "answer": "You must provide a doctor's note to HR if you are sick for more than three consecutive working days [3].",
+      "answer": "You need to show a medical certificate to HR if you are sick for more than three consecutive working days [3].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: You must provide a doctor's note to HR if you are sick for more than three consecutive working days.\n\nUNSUPPORTED: You are sick for more than three consecutive working days.",
-      "latency_ms": 12620.4
+      "faithfulness": 0.0,
+      "judge_raw": "1: UNSUPPORTED",
+      "latency_ms": 8063.3
     },
     {
       "id": "parental-primary",
@@ -194,9 +194,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: The primary caregiver receives 18 weeks of fully paid parental leave.\nUNSUPPORTED: The primary caregiver receives fully paid parental leave.",
-      "latency_ms": 15873.2
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9747.6
     },
     {
       "id": "parental-return",
@@ -212,9 +212,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Employees returning from parental leave may work a reduced 80 percent schedule at full pay for their first month back.\n\nUNSUPPORTED: Yes",
-      "latency_ms": 13294.9
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8441.0
     },
     {
       "id": "remote-days",
@@ -231,8 +231,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: Employees may work remotely up to three days per week",
-      "latency_ms": 19461.8
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 11899.5
     },
     {
       "id": "home-office",
@@ -249,8 +249,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: The company will pay for your desk and chair at home.\nUNSUPPORTED: The company will pay for your desk and chair at home.",
-      "latency_ms": 16126.7
+      "judge_raw": "1: UNSUPPORTED\n2: SUPPORTED",
+      "latency_ms": 10427.7
     },
     {
       "id": "abroad",
@@ -262,13 +262,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "Working from another country for more than 20 working days per year requires approval from the People team due to tax and insurance rules [1].",
+      "answer": "Working from another country for more than 20 working days per year requires approval from the People team [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Working from another country for more than 20 working days per year requires approval from the People team due to tax and insurance rules.\n\nUNSUPPORTED: Working from another country for a few weeks.",
-      "latency_ms": 4932.6
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 3208.6
     },
     {
       "id": "expense-deadline",
@@ -284,9 +284,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Expense claims must be submitted within 30 days in Ledgerly.\nUNSUPPORTED: Ledgerly is the expense tool.",
-      "latency_ms": 19566.4
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 11939.6
     },
     {
       "id": "meal-allowance",
@@ -302,9 +302,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: You can spend up to 45 euros per day on meals while travelling.\n\nUNSUPPORTED: The user asked about how much they can spend on food per day on a business trip.",
-      "latency_ms": 13993.4
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8729.4
     },
     {
       "id": "learning-budget",
@@ -316,13 +316,13 @@
         "vector": 1,
         "keyword": 2
       },
-      "answer": "Yes, there is money for training courses and conferences. The annual learning budget for each employee is 1,200 euros, which can be used for courses, books, and conference tickets [1].",
+      "answer": "Yes, employees have an annual learning budget of 1,200 euros for courses and conferences [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: There is money for training courses and conferences.\nUNSUPPORTED: The annual learning budget for each employee is 1,200 euros.",
-      "latency_ms": 16719.3
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9374.7
     },
     {
       "id": "password-length",
@@ -339,8 +339,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: All passwords must be at least 14 characters long.",
-      "latency_ms": 15344.2
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9313.5
     },
     {
       "id": "admin-mfa",
@@ -356,9 +356,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Administrators must use a hardware security key as their second factor.\n\nUNSUPPORTED: Administrators must use a hardware security key as their second factor [1].",
-      "latency_ms": 14024.8
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8608.6
     },
     {
       "id": "lost-laptop",
@@ -374,9 +374,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: You must report the lost or stolen laptop to security@northwind.example within one hour.\n\nUNSUPPORTED: The laptop was left on the train.",
-      "latency_ms": 16569.5
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 10222.8
     },
     {
       "id": "screen-lock",
@@ -393,8 +393,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: Screens must lock automatically after five minutes of inactivity.",
-      "latency_ms": 12974.2
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 7974.6
     },
     {
       "id": "access-review",
@@ -410,9 +410,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Managers review the system access of their team members every quarter.\n\nUNSUPPORTED: Every quarter",
-      "latency_ms": 15412.0
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9441.1
     },
     {
       "id": "critical-patch",
@@ -428,9 +428,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Critical vulnerabilities must be patched within 7 days of disclosure.\nUNSUPPORTED: [1]",
-      "latency_ms": 14558.9
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8883.6
     },
     {
       "id": "phishing",
@@ -447,8 +447,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: Simulated phishing exercises are run every month.",
-      "latency_ms": 11236.1
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 6884.7
     },
     {
       "id": "api-key-header",
@@ -465,8 +465,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: The X-NW-Key header carries the API key.",
-      "latency_ms": 15582.6
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9455.5
     },
     {
       "id": "key-rotation",
@@ -478,13 +478,13 @@
         "vector": 3,
         "keyword": 1
       },
-      "answer": "The old key keeps working for 24 hours after a rotation so that deployments can be updated without downtime [1].",
+      "answer": "The old key keeps working for 24 hours after a rotation [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: The old key keeps working for 24 hours after a rotation so that deployments can be updated without downtime.",
-      "latency_ms": 13700.7
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8123.8
     },
     {
       "id": "growth-rate-limit",
@@ -501,8 +501,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: The Growth plan allows 600 requests per minute.",
-      "latency_ms": 15617.0
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9515.9
     },
     {
       "id": "too-many-requests",
@@ -514,13 +514,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "When the API says you're sending too many requests, your client should wait for the specified amount of time in the Retry-After header and then retry the request. This is indicated in the source material [1], which states that when you exceed the rate limit, the API responds with HTTP status 429 and a Retry-After header that tells you how many seconds to wait before retrying.",
+      "answer": "When the API says you're sending too many requests, your client should wait for the specified amount of time in the Retry-After header before retrying the request [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: When the API says you're sending too many requests, your client should wait for the specified amount of time in the Retry-After header and then retry the request.\nUNSUPPORTED: This is indicated in the source material [1], which states that when you exceed the rate limit, the API responds with HTTP status 429 and a Retry-After header that tells you how many seconds to wait before retrying.",
-      "latency_ms": 17574.0
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9095.9
     },
     {
       "id": "nw-4012",
@@ -537,8 +537,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: Error code NW-4012 means a webhook signature did not match the payload.",
-      "latency_ms": 15371.5
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9578.1
     },
     {
       "id": "nw-2003",
@@ -554,9 +554,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Error code NW-2003 means the monthly quota for your plan has been exhausted.\nUNSUPPORTED: the monthly quota for your plan has been exhausted",
-      "latency_ms": 9511.1
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 6180.7
     },
     {
       "id": "page-size",
@@ -568,13 +568,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "List endpoints use cursor-based pagination. Pass the next_cursor value from the previous response to fetch the next page. The maximum page size is 200 items and the default is 50. [1]",
+      "answer": "The maximum page size for list endpoints is 200 items [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: List endpoints use cursor-based pagination.\nSUPPORTED: Pass the next_cursor value from the previous response to fetch the next page.\nSUPPORTED: The maximum page size is 200 items.\nSUPPORTED: The default is 50.",
-      "latency_ms": 15253.7
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8087.3
     },
     {
       "id": "webhook-retries",
@@ -590,9 +590,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Failed webhooks are retried 8 times over 24 hours with exponential backoff.\nUNSUPPORTED: Each delivery is signed with HMAC-SHA256 and the signature is sent in the X-NW-Signature header; verify it before trusting the payload.",
-      "latency_ms": 19445.0
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED\n2: SUPPORTED",
+      "latency_ms": 12718.8
     },
     {
       "id": "deprecation",
@@ -608,9 +608,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: The old version of the API is supported for 12 months after the deprecation notice.\nUNSUPPORTED: The old version of the API is supported.",
-      "latency_ms": 16909.9
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 10414.9
     },
     {
       "id": "enterprise-uptime",
@@ -627,8 +627,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: Northwind commits to a monthly uptime of 99.95 percent for Enterprise customers.",
-      "latency_ms": 20090.9
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 12424.1
     },
     {
       "id": "credit-99",
@@ -646,7 +646,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 19410.3
+      "latency_ms": 11730.3
     },
     {
       "id": "credit-claim",
@@ -664,7 +664,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 12209.7
+      "latency_ms": 7508.2
     },
     {
       "id": "p1-response",
@@ -680,9 +680,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Enterprise customers can raise P1 incidents 24 hours a day, 7 days a week.\nUNSUPPORTED: and receive a first response within 15 minutes",
-      "latency_ms": 16490.7
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 10603.8
     },
     {
       "id": "maintenance",
@@ -698,9 +698,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Planned maintenance takes place on Sundays between 02:00 and 04:00 UTC.\nUNSUPPORTED: Planned maintenance happens during the specified time period.",
-      "latency_ms": 16271.7
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 10276.2
     },
     {
       "id": "sev1-definition",
@@ -716,9 +716,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: SEV1 is a full outage of a core product or any confirmed loss of customer data.\n\nUNSUPPORTED: What counts as a SEV1 incident?",
-      "latency_ms": 15375.7
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9575.1
     },
     {
       "id": "ack-time",
@@ -730,13 +730,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "The primary on-call engineer must acknowledge the page within 5 minutes [1]. If the page is not acknowledged within 5 minutes, the secondary on-call is paged [1]. If the secondary on-call does not acknowledge within 10 minutes, the engineering manager is notified [1].",
+      "answer": "The primary on-call engineer must acknowledge the page within 5 minutes [1]. If not acknowledged within 10 minutes, PagerBell escalates automatically to the secondary on-call and then to the engineering manager [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.3333333333333333,
-      "judge_raw": "SUPPORTED: The primary on-call engineer must acknowledge the page within 5 minutes.\nUNSUPPORTED: If the page is not acknowledged within 5 minutes, the secondary on-call is paged.\nUNSUPPORTED: If the secondary on-call does not acknowledge within 10 minutes, the engineering manager is notified.",
-      "latency_ms": 17833.8
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED\n2: SUPPORTED",
+      "latency_ms": 10738.7
     },
     {
       "id": "status-page",
@@ -753,8 +753,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: The status page must be updated within 15 minutes of the incident being declared.\nSUPPORTED: The status page must be updated at least every 30 minutes until it is resolved.",
-      "latency_ms": 16080.4
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 10109.0
     },
     {
       "id": "postmortem",
@@ -770,9 +770,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: A written postmortem is required for every SEV1 and SEV2 incident.\nUNSUPPORTED: A written postmortem is required for every SEV1 incident.\nUNSUPPORTED: A written postmortem is required for every SEV2 incident.\nSUPPORTED: A written postmortem must be published within 5 business days.",
-      "latency_ms": 13520.3
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8545.9
     },
     {
       "id": "growth-price",
@@ -789,8 +789,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: The Growth plan costs 12 US dollars per user per month, billed annually",
-      "latency_ms": 17163.0
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 10417.7
     },
     {
       "id": "eu-region",
@@ -802,13 +802,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "The EU region is hosted in Frankfurt [1].",
+      "answer": "European customer data is hosted in Frankfurt [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: The EU region is hosted in Frankfurt.\nUNSUPPORTED: European customer data.",
-      "latency_ms": 10639.0
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 6441.6
     },
     {
       "id": "export-formats",
@@ -825,8 +825,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "SUPPORTED: Workspace data can be exported in CSV, JSON, and Parquet formats.",
-      "latency_ms": 11868.0
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 7412.0
     },
     {
       "id": "after-cancel",
@@ -842,9 +842,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.6666666666666666,
-      "judge_raw": "SUPPORTED: When you stop paying and close your account, your data is kept for 30 days so that you can reactivate or export it, after which it is permanently deleted.\n\nUNSUPPORTED: Your data is kept for 30 days so that you can reactivate or export it, after which it is permanently deleted.\n\nSUPPORTED: After cancellation your data is kept for 30 days so that you can reactivate or export it, and then it is permanently deleted.",
-      "latency_ms": 13427.9
+      "faithfulness": 0.0,
+      "judge_raw": "1: UNSUPPORTED",
+      "latency_ms": 8643.7
     },
     {
       "id": "sso",
@@ -860,9 +860,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: The Enterprise plan includes SAML single sign-on.\nUNSUPPORTED: The Enterprise plan is the only plan that includes SAML single sign-on.",
-      "latency_ms": 14646.1
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8921.6
     },
     {
       "id": "backup-retention",
@@ -878,9 +878,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Database backups are kept for 35 days.\nUNSUPPORTED: Database backups are encrypted with AES-256 and stored in a different region from the primary database.",
-      "latency_ms": 10506.7
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 6478.7
     },
     {
       "id": "audit-logs",
@@ -896,9 +896,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Audit logs are retained for 1 year by default.\nUNSUPPORTED: Audit logs are retained for 7 years on the Enterprise plan.",
-      "latency_ms": 14148.6
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8763.6
     },
     {
       "id": "gdpr",
@@ -910,13 +910,13 @@
         "vector": 1,
         "keyword": 2
       },
-      "answer": "When a workspace is deleted, its data is removed from production systems immediately and purged from backups within 35 days as the backups expire [2].",
+      "answer": "We fulfil data subject requests such as access or erasure within 30 days [1].",
       "refused": false,
       "grounded": true,
-      "facts_found": false,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: When a workspace is deleted, its data is removed from production systems immediately.\nUNSUPPORTED: and purged from backups within 35 days as the backups expire",
-      "latency_ms": 10972.7
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 6472.0
     },
     {
       "id": "friday-deploys",
@@ -928,13 +928,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "I don't know based on the provided documents. [1]",
+      "answer": "I don't know based on the provided documents.",
       "refused": true,
       "grounded": true,
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 12331.8
+      "latency_ms": 7433.4
     },
     {
       "id": "review-approvals",
@@ -946,13 +946,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "Every pull request to the main branch needs approval from two reviewers, and at least one of them must be a code owner of the changed files. [1]",
+      "answer": "A pull request to the main branch needs approval from two reviewers, with at least one of them being a code owner of the changed files. [1]",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: Every pull request to the main branch needs approval from two reviewers, and at least one of them must be a code owner of the changed files.\nUNSUPPORTED: [1]",
-      "latency_ms": 17516.3
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 10941.5
     },
     {
       "id": "u-ceo-salary",
@@ -970,7 +970,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 7382.0
+      "latency_ms": 4611.0
     },
     {
       "id": "u-dental",
@@ -988,7 +988,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 14375.6
+      "latency_ms": 8684.0
     },
     {
       "id": "u-student",
@@ -1006,7 +1006,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 11334.6
+      "latency_ms": 6942.4
     },
     {
       "id": "u-capital",
@@ -1024,7 +1024,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 5.9
+      "latency_ms": 12.3
     },
     {
       "id": "u-eu-cloud",
@@ -1040,9 +1040,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": null,
-      "faithfulness": 0.5,
-      "judge_raw": "SUPPORTED: The Frankfurt data center is run by a cloud provider.\nUNSUPPORTED: [1]",
-      "latency_ms": 10813.8
+      "faithfulness": 0.0,
+      "judge_raw": "1: UNSUPPORTED",
+      "latency_ms": 6588.1
     },
     {
       "id": "u-contractor-sick",
@@ -1060,7 +1060,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 13791.7
+      "latency_ms": 8357.5
     },
     {
       "id": "u-graphql",
@@ -1078,7 +1078,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 13005.8
+      "latency_ms": 7858.1
     },
     {
       "id": "u-office",
@@ -1096,7 +1096,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 11800.9
+      "latency_ms": 7255.3
     }
   ]
 }
