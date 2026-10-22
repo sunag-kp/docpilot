@@ -49,6 +49,12 @@ class RateLimitedError(DomainError):
         self.retry_after_seconds = retry_after_seconds
 
 
+class GenerationUnavailableError(DomainError):
+    """The configured LLM backend is unreachable or overloaded (retryable, HTTP 503)."""
+
+    code = "generation_unavailable"
+
+
 # --- ingestion -------------------------------------------------------------------------
 
 
