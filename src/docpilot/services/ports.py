@@ -14,6 +14,7 @@ from types import TracebackType
 from typing import Protocol, Self
 from uuid import UUID
 
+from docpilot.domain.answers import Citation, GenerationRequest
 from docpilot.domain.events import DeadLetter, DocumentUploaded
 from docpilot.domain.models import (
     ApiKey,
@@ -26,6 +27,7 @@ from docpilot.domain.models import (
     Tenant,
     User,
 )
+from docpilot.domain.retrieval import ScoredChunk
 
 # --- persistence -----------------------------------------------------------------------
 
@@ -155,6 +157,60 @@ class Embedder(Protocol):
     def dim(self) -> int: ...
     async def embed_documents(self, texts: Sequence[str]) -> list[list[float]]: ...
     async def embed_query(self, text: str) -> list[float]: ...
+
+
+# --- retrieval & generation -----------------------------------------------------------
+
+
+class ChunkSearch(Protocol):
+    async def vector_search(
+        self,
+        tenant_id: UUID,
+        embedding: Sequence[float],
+        limit: int,
+        document_ids: Sequence[UUID] | None = None,
+    ) -> list[ScoredChunk]: ...
+
+    async def keyword_search(
+        self,
+        tenant_id: UUID,
+        query: str,
+        limit: int,
+        document_ids: Sequence[UUID] | None = None,
+    ) -> list[ScoredChunk]: ...
+
+
+class Reranker(Protocol):
+    async def rerank(self, query: str, chunks: Sequence[ScoredChunk]) -> list[ScoredChunk]:
+        """Return the same chunks with ``rerank_score`` set, best first."""
+        ...
+
+
+class LLM(Protocol):
+    @property
+    def name(self) -> str: ...
+
+    def stream(self, request: GenerationRequest) -> AsyncIterator[str]:
+        """Yield answer text deltas as they are generated."""
+        ...
+
+
+@dataclass(frozen=True, slots=True)
+class CachedAnswer:
+    answer: str
+    citations: list[Citation]
+    refused: bool
+    model: str
+
+
+class AnswerCache(Protocol):
+    async def get(self, keys: Sequence[str]) -> CachedAnswer | None:
+        """Return the first hit among ``keys`` (exact key first, then normalised)."""
+        ...
+
+    async def set(self, keys: Sequence[str], answer: CachedAnswer) -> None: ...
+    async def corpus_version(self, tenant_id: UUID) -> int: ...
+    async def bump_corpus_version(self, tenant_id: UUID) -> None: ...
 
 
 # --- security --------------------------------------------------------------------------
