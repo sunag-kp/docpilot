@@ -1,11 +1,17 @@
 name: Pages (browser demo)
 
-# Publishes the UI in demo mode: the whole backend is mocked in the browser, so the live
-# demo costs nothing to host. One-time setup: Settings -> Pages -> Source: GitHub Actions.
+# Publishes the UI in demo mode (the whole backend is mocked in the browser, so the live
+# demo costs nothing to host) and the API reference at /api/.
+# One-time setup: Settings -> Pages -> Source: GitHub Actions.
 on:
   push:
     branches: [main]
-    paths: ["ui/**", "eval/corpus_src/**", ".github/workflows/pages.yml"]
+    paths:
+      - "ui/**"
+      - "eval/corpus_src/**"
+      - "docs/openapi.json"
+      - "docs/api.html"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -31,6 +37,11 @@ jobs:
         working-directory: ui
       - run: npm run build:demo
         working-directory: ui
+      - name: Add the API reference (Redoc over the committed OpenAPI schema)
+        run: |
+          mkdir -p ui/dist/api
+          cp docs/openapi.json ui/dist/api/openapi.json
+          cp docs/api.html ui/dist/api/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ui/dist
