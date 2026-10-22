@@ -13,16 +13,67 @@ from docpilot.domain.retrieval import ScoredChunk
 from docpilot.infra.db.tables import documents, make_chunks_table
 
 # Questions are natural language, so AND-ing every term (websearch_to_tsquery) would
-# almost never match. Instead the question is reduced to its English lexemes (stop words
-# dropped, stemmed) and OR-ed; ts_rank_cd then rewards passages covering more of them,
-# densely. Section headings carry weight A, body text weight B (see the migration).
-_KEYWORD_SQL = """
+# almost never match. The question is reduced to its English lexemes (stop words dropped,
+# stemmed) and OR-ed; candidates are chunks containing at least one of them.
+#
+# Ranking: Postgres' built-in ts_rank_cd has no notion of how *rare* a term is, so a
+# question word that appears everywhere ("days") counts as much as the one that matters
+# ("contractors"). We therefore compute Okapi BM25 in SQL: IDF from the tenant's corpus,
+# term-frequency saturation (k1) and length normalisation (b) with the chunk token count.
+# Cost grows with the number of matching chunks; beyond ~10^5 chunks per tenant a
+# precomputed term-statistics table (or ParadeDB pg_search) would replace this.
+_BM25_SQL = """
+WITH terms AS (
+    SELECT DISTINCT lexeme FROM unnest(to_tsvector('english', :query))
+),
+q AS (
+    SELECT to_tsquery('simple', string_agg(quote_literal(lexeme), ' | ')) AS query FROM terms
+),
+corpus AS (
+    SELECT count(*)::float8 AS n, greatest(avg(token_count), 1)::float8 AS avgdl
+    FROM chunks WHERE tenant_id = :tenant_id
+),
+matches AS (
+    SELECT c.id, c.document_id, c.chunk_index, c.text, c.section, c.page_start, c.page_end,
+           c.token_count, c.tsv
+    FROM chunks c, q
+    WHERE q.query IS NOT NULL AND c.tenant_id = :tenant_id AND c.tsv @@ q.query
+),
+tf AS (
+    SELECT m.id, t.lexeme, cardinality(t.positions)::float8 AS tf, m.token_count
+    FROM matches m, unnest(m.tsv) AS t
+    WHERE t.lexeme IN (SELECT lexeme FROM terms)
+),
+df AS (
+    SELECT lexeme, count(*)::float8 AS df FROM tf GROUP BY lexeme
+)
+SELECT m.id, m.document_id, m.chunk_index, m.text, m.section, m.page_start, m.page_end,
+       d.filename,
+       sum(
+           ln(1 + (corpus.n - df.df + 0.5) / (df.df + 0.5))
+           * tf.tf * (:k1 + 1)
+           / (tf.tf + :k1 * (1 - :b + :b * tf.token_count / corpus.avgdl))
+       ) AS rank
+FROM tf
+JOIN df USING (lexeme)
+JOIN matches m ON m.id = tf.id
+JOIN documents d ON d.id = m.document_id
+CROSS JOIN corpus
+WHERE true {document_filter}
+GROUP BY m.id, m.document_id, m.chunk_index, m.text, m.section, m.page_start, m.page_end,
+         d.filename
+ORDER BY rank DESC, m.id
+LIMIT :limit
+"""
+
+# Baseline kept for the evaluation ablation (KEYWORD_RANKER=ts_rank).
+_TS_RANK_SQL = """
 WITH q AS (
     SELECT to_tsquery('simple', string_agg(quote_literal(lexeme), ' | ')) AS query
     FROM unnest(to_tsvector('english', :query))
 )
 SELECT c.id, c.document_id, c.chunk_index, c.text, c.section, c.page_start, c.page_end,
-       d.filename, ts_rank_cd(c.tsv, q.query, 32) AS rank
+       d.filename, ts_rank_cd(c.tsv, q.query) AS rank
 FROM q
 JOIN chunks c ON c.tsv @@ q.query
 JOIN documents d ON d.id = c.document_id
@@ -35,10 +86,24 @@ LIMIT :limit
 
 
 class PgChunkSearch:
-    def __init__(self, engine: AsyncEngine, embedding_dim: int, *, ef_search: int = 100) -> None:
+    def __init__(
+        self,
+        engine: AsyncEngine,
+        embedding_dim: int,
+        *,
+        ef_search: int = 100,
+        keyword_ranker: str = "bm25",
+        bm25_k1: float = 1.2,
+        bm25_b: float = 0.75,
+    ) -> None:
+        if keyword_ranker not in {"bm25", "ts_rank"}:
+            raise ValueError(f"unknown keyword ranker {keyword_ranker!r}")
         self._engine = engine
         self._chunks = make_chunks_table(embedding_dim)
         self._ef_search = ef_search
+        self._ranker = keyword_ranker
+        self._k1 = bm25_k1
+        self._b = bm25_b
 
     async def vector_search(
         self,
@@ -96,14 +161,22 @@ class PgChunkSearch:
         document_ids: Sequence[UUID] | None = None,
     ) -> list[ScoredChunk]:
         params: dict[str, Any] = {"query": query, "tenant_id": tenant_id, "limit": limit}
+        alias = "m" if self._ranker == "bm25" else "c"
         document_filter = ""
         if document_ids:
-            document_filter = "AND c.document_id = ANY(:document_ids)"
+            document_filter = f"AND {alias}.document_id = ANY(:document_ids)"
             params["document_ids"] = list(document_ids)
-        sql = text(_KEYWORD_SQL.format(document_filter=document_filter))
+        if self._ranker == "bm25":
+            params |= {"k1": self._k1, "b": self._b}
+            sql = text(_BM25_SQL.format(document_filter=document_filter))
+        else:
+            sql = text(_TS_RANK_SQL.format(document_filter=document_filter))
         async with self._engine.connect() as conn:
             rows = (await conn.execute(sql, params)).all()
-        return [_scored(row, keyword_rank=float(row.rank)) for row in rows]
+        # Squash the unbounded score into [0, 1) for display; ranks are what RRF uses.
+        return [
+            _scored(row, keyword_rank=float(row.rank) / (float(row.rank) + 1.0)) for row in rows
+        ]
 
 
 def _scored(

@@ -131,3 +131,27 @@ async def test_hybrid_retriever_over_postgres(
     assert hybrid.keyword_hits > 0
     keyword_only = await retriever.retrieve(tenant, "kitchen", top_k=2, mode=SearchMode.KEYWORD)
     assert [c.section for c in keyword_only.chunks] == ["Office"]
+
+
+async def test_bm25_weights_rare_terms_and_ts_rank_baseline_still_works(
+    engine: AsyncEngine, uow_factory: Callable[[], UnitOfWork]
+) -> None:
+    tenant, _ = await seed(
+        uow_factory,
+        HashingEmbedder(384),
+        [
+            ("A", "Employees get days off. Days off are days. More days, days, days."),
+            ("B", "External contractors receive no paid days off."),
+            ("C", "The office plants are watered on Mondays."),
+        ],
+    )
+    question = "How many days off do external contractors get?"
+    bm25 = await PgChunkSearch(engine, 384).keyword_search(tenant, question, 5)
+    # "contractors"/"external" are rare, "days" is everywhere: BM25's IDF ranks B first.
+    assert bm25[0].section == "B"
+    baseline = await PgChunkSearch(engine, 384, keyword_ranker="ts_rank").keyword_search(
+        tenant, question, 5
+    )
+    assert {c.section for c in baseline} == {"A", "B"}
+    with pytest.raises(ValueError, match="unknown keyword ranker"):
+        PgChunkSearch(engine, 384, keyword_ranker="tf-idf")
