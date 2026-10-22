@@ -37,3 +37,4 @@ ui/dist/
 *.swp
 .DS_Store
 .models/
+ui/dist-demo/

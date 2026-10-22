@@ -7,6 +7,17 @@
 # ---------------------------------------------------------------------------------------
 ARG PYTHON_IMAGE=python:3.12-slim
 
+FROM node:22-alpine AS ui
+WORKDIR /ui
+COPY ui/package.json ui/package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=secret,id=ca_bundle,required=false \
+    if [ -s /run/secrets/ca_bundle ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca_bundle; fi; \
+    npm ci --no-audit --no-fund
+COPY ui ./
+COPY eval/corpus_src /eval/corpus_src
+RUN npm run build
+
 FROM ${PYTHON_IMAGE} AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never PIP_DISABLE_PIP_VERSION_CHECK=1
 WORKDIR /app
@@ -40,6 +51,7 @@ RUN groupadd --system --gid 10001 docpilot \
 WORKDIR /app
 COPY --from=builder --chown=docpilot:docpilot /app/.venv /app/.venv
 COPY --from=builder --chown=docpilot:docpilot /models /models
+COPY --from=ui --chown=docpilot:docpilot /ui/dist ./ui/dist
 COPY --chown=docpilot:docpilot alembic.ini ./
 COPY --chown=docpilot:docpilot migrations ./migrations
 USER docpilot
