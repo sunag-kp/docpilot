@@ -7,13 +7,26 @@ unreachable dependency must fail the build instead of silently skipping.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import socket
+from collections.abc import AsyncIterator, Callable
+from pathlib import Path
 from urllib.parse import urlparse
+from uuid import uuid4
 
 import pytest
+from alembic import command
+from alembic.config import Config
+from sqlalchemy.ext.asyncio import AsyncEngine
 
-from docpilot.config import Environment, Settings
+from docpilot.config import EmbeddingProvider, Environment, Settings
+from docpilot.infra.db.engine import create_engine
+from docpilot.infra.db.repositories import SqlUnitOfWork
+from docpilot.services.ports import UnitOfWork
+
+ROOT = Path(__file__).resolve().parents[2]
+RUN_ID = uuid4().hex[:8]  # isolates Kafka topics / groups / buckets per test session
 
 
 def integration_settings(**overrides: object) -> Settings:
@@ -21,6 +34,12 @@ def integration_settings(**overrides: object) -> Settings:
         "app_env": Environment.TEST,
         "log_json": False,
         "log_level": "WARNING",
+        "embedding_provider": EmbeddingProvider.HASHING,
+        "kafka_topic_ingest": f"test.{RUN_ID}.documents.uploaded",
+        "kafka_topic_dlq": f"test.{RUN_ID}.documents.uploaded.dlq",
+        "kafka_consumer_group": f"test-{RUN_ID}",
+        "kafka_topic_partitions": 3,
+        "s3_bucket": f"test-{RUN_ID}",
     }
     base.update(overrides)
     return Settings(_env_file=None, **base)  # type: ignore[arg-type]
@@ -53,3 +72,22 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 @pytest.fixture
 def settings() -> Settings:
     return integration_settings()
+
+
+@pytest.fixture(scope="session")
+async def migrated() -> None:
+    config = Config(str(ROOT / "alembic.ini"))
+    # Alembic's env.py calls asyncio.run(); give it a thread with no running loop.
+    await asyncio.to_thread(command.upgrade, config, "head")
+
+
+@pytest.fixture
+async def engine(migrated: None, settings: Settings) -> AsyncIterator[AsyncEngine]:
+    engine = create_engine(settings)
+    yield engine
+    await engine.dispose()
+
+
+@pytest.fixture
+def uow_factory(engine: AsyncEngine, settings: Settings) -> Callable[[], UnitOfWork]:
+    return lambda: SqlUnitOfWork(engine, settings.embedding_dim)
