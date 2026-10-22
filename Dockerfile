@@ -22,15 +22,24 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-editable
+# Bake the local embedding model into the image: containers start with no network access.
+RUN --mount=type=secret,id=ca_bundle,required=false \
+    if [ -s /run/secrets/ca_bundle ]; then \
+      export SSL_CERT_FILE=/run/secrets/ca_bundle REQUESTS_CA_BUNDLE=/run/secrets/ca_bundle; \
+    fi; \
+    /app/.venv/bin/python -m docpilot.infra.embeddings.model_download --cache-dir /models
 
 FROM ${PYTHON_IMAGE} AS runtime
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/app/.venv/bin:${PATH}"
+    PATH="/app/.venv/bin:${PATH}" \
+    HF_HUB_OFFLINE=1 \
+    EMBEDDING_MODEL_PATH=/models/sentence-transformers--all-MiniLM-L6-v2
 RUN groupadd --system --gid 10001 docpilot \
     && useradd --system --uid 10001 --gid docpilot --home-dir /app --shell /usr/sbin/nologin docpilot
 WORKDIR /app
 COPY --from=builder --chown=docpilot:docpilot /app/.venv /app/.venv
+COPY --from=builder --chown=docpilot:docpilot /models /models
 COPY --chown=docpilot:docpilot alembic.ini ./
 COPY --chown=docpilot:docpilot migrations ./migrations
 USER docpilot
