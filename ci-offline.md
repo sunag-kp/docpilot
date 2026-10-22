@@ -1,4 +1,4 @@
-# DocPilot evaluation — 2026-10-22T13:14:04+00:00
+# DocPilot evaluation — 2026-10-22T13:42:34+00:00
 
 Embedding `fastembed:sentence-transformers/all-MiniLM-L6-v2` · keyword ranker `bm25` · answerer `extractive` · judge `none` · 56 questions (48 answerable, 8 unanswerable) · corpus 8 docs / 44 chunks (docx, markdown, pdf)
 
@@ -28,4 +28,4 @@ Embedding `fastembed:sentence-transformers/all-MiniLM-L6-v2` · keyword ranker `
 | False refusals on answerable questions | 0.000 |
 | Citation validity (cites only real sources, or refuses) | 1.000 |
 | Faithfulness (LLM judge: supported sentences / sentences) | not measured (no judge) |
-| Answer latency p50 / p95 (ms) | 10 / 58 |
+| Answer latency p50 / p95 (ms) | 10 / 61 |

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-22T13:14:04+00:00",
+  "generated_at": "2026-10-22T13:42:34+00:00",
   "config": {
     "embedding": "fastembed:sentence-transformers/all-MiniLM-L6-v2",
     "llm": "extractive",
@@ -22,7 +22,7 @@
   "ingestion": {
     "documents": 8,
     "chunks": 44,
-    "seconds": 0.99,
+    "seconds": 1.11,
     "formats": [
       "docx",
       "markdown",
@@ -86,8 +86,8 @@
     "faithfulness": null,
     "faithfulness_judged": 0,
     "faithfulness_unparseable": null,
-    "latency_ms_p50": 9.8,
-    "latency_ms_p95": 58.3
+    "latency_ms_p50": 9.5,
+    "latency_ms_p95": 61.1
   },
   "questions": [
     {
@@ -106,7 +106,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 155.7
+      "latency_ms": 213.0
     },
     {
       "id": "pto-carryover",
@@ -124,7 +124,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 55.6
+      "latency_ms": 58.5
     },
     {
       "id": "pto-notice",
@@ -142,7 +142,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 51.4
+      "latency_ms": 61.1
     },
     {
       "id": "sick-days",
@@ -160,7 +160,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 20.4
+      "latency_ms": 19.9
     },
     {
       "id": "doctor-note",
@@ -178,7 +178,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 42.3
+      "latency_ms": 47.1
     },
     {
       "id": "parental-primary",
@@ -196,7 +196,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.6
+      "latency_ms": 8.1
     },
     {
       "id": "parental-return",
@@ -214,7 +214,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 17.2
+      "latency_ms": 15.0
     },
     {
       "id": "remote-days",
@@ -232,7 +232,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 10.1
+      "latency_ms": 10.8
     },
     {
       "id": "home-office",
@@ -250,7 +250,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 64.9
+      "latency_ms": 71.5
     },
     {
       "id": "abroad",
@@ -268,7 +268,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.0
+      "latency_ms": 9.3
     },
     {
       "id": "expense-deadline",
@@ -286,7 +286,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 23.8
+      "latency_ms": 32.5
     },
     {
       "id": "meal-allowance",
@@ -304,7 +304,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 24.2
+      "latency_ms": 25.0
     },
     {
       "id": "learning-budget",
@@ -322,7 +322,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 26.2
+      "latency_ms": 19.0
     },
     {
       "id": "password-length",
@@ -340,7 +340,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 7.8
+      "latency_ms": 7.7
     },
     {
       "id": "admin-mfa",
@@ -358,7 +358,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 22.8
+      "latency_ms": 29.5
     },
     {
       "id": "lost-laptop",
@@ -376,7 +376,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.6
+      "latency_ms": 8.5
     },
     {
       "id": "screen-lock",
@@ -394,7 +394,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 58.3
+      "latency_ms": 56.8
     },
     {
       "id": "access-review",
@@ -412,7 +412,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.6
+      "latency_ms": 8.7
     },
     {
       "id": "critical-patch",
@@ -448,7 +448,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 21.7
+      "latency_ms": 21.6
     },
     {
       "id": "api-key-header",
@@ -466,7 +466,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 45.2
+      "latency_ms": 45.9
     },
     {
       "id": "key-rotation",
@@ -484,7 +484,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 7.9
+      "latency_ms": 8.8
     },
     {
       "id": "growth-rate-limit",
@@ -502,7 +502,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 7.7
+      "latency_ms": 8.3
     },
     {
       "id": "too-many-requests",
@@ -520,7 +520,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 19.2
+      "latency_ms": 24.4
     },
     {
       "id": "nw-4012",
@@ -538,7 +538,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.1
+      "latency_ms": 8.7
     },
     {
       "id": "nw-2003",
@@ -556,7 +556,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 23.2
+      "latency_ms": 24.1
     },
     {
       "id": "page-size",
@@ -574,7 +574,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 31.0
+      "latency_ms": 28.8
     },
     {
       "id": "webhook-retries",
@@ -592,7 +592,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.1
+      "latency_ms": 8.7
     },
     {
       "id": "deprecation",
@@ -610,7 +610,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.0
+      "latency_ms": 8.3
     },
     {
       "id": "enterprise-uptime",
@@ -628,7 +628,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 10.6
+      "latency_ms": 9.6
     },
     {
       "id": "credit-99",
@@ -646,7 +646,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.9
+      "latency_ms": 8.5
     },
     {
       "id": "credit-claim",
@@ -664,7 +664,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 15.7
+      "latency_ms": 13.7
     },
     {
       "id": "p1-response",
@@ -682,7 +682,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 23.7
+      "latency_ms": 25.8
     },
     {
       "id": "maintenance",
@@ -700,7 +700,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.4
+      "latency_ms": 7.5
     },
     {
       "id": "sev1-definition",
@@ -718,7 +718,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.1
+      "latency_ms": 8.1
     },
     {
       "id": "ack-time",
@@ -736,7 +736,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 22.1
+      "latency_ms": 20.5
     },
     {
       "id": "status-page",
@@ -754,7 +754,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.8
+      "latency_ms": 9.5
     },
     {
       "id": "postmortem",
@@ -772,7 +772,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.5
+      "latency_ms": 6.9
     },
     {
       "id": "growth-price",
@@ -790,7 +790,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.0
+      "latency_ms": 7.8
     },
     {
       "id": "eu-region",
@@ -808,7 +808,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 29.7
+      "latency_ms": 24.3
     },
     {
       "id": "export-formats",
@@ -826,7 +826,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.6
+      "latency_ms": 7.4
     },
     {
       "id": "after-cancel",
@@ -844,7 +844,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 24.9
+      "latency_ms": 16.3
     },
     {
       "id": "sso",
@@ -862,7 +862,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 19.2
+      "latency_ms": 15.7
     },
     {
       "id": "backup-retention",
@@ -880,7 +880,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.3
+      "latency_ms": 7.2
     },
     {
       "id": "audit-logs",
@@ -898,7 +898,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.9
+      "latency_ms": 9.6
     },
     {
       "id": "gdpr",
@@ -916,7 +916,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.7
+      "latency_ms": 8.5
     },
     {
       "id": "friday-deploys",
@@ -934,7 +934,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.5
+      "latency_ms": 7.9
     },
     {
       "id": "review-approvals",
@@ -952,7 +952,7 @@
       "facts_found": true,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.8
+      "latency_ms": 8.2
     },
     {
       "id": "u-ceo-salary",
@@ -970,7 +970,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.1
+      "latency_ms": 7.6
     },
     {
       "id": "u-dental",
@@ -988,7 +988,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.9
+      "latency_ms": 7.7
     },
     {
       "id": "u-student",
@@ -1006,7 +1006,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.8
+      "latency_ms": 7.9
     },
     {
       "id": "u-capital",
@@ -1024,7 +1024,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 6.3
+      "latency_ms": 5.7
     },
     {
       "id": "u-eu-cloud",
@@ -1042,7 +1042,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 8.7
+      "latency_ms": 8.6
     },
     {
       "id": "u-contractor-sick",
@@ -1060,7 +1060,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 9.5
+      "latency_ms": 10.0
     },
     {
       "id": "u-graphql",
@@ -1096,7 +1096,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 7.8
+      "latency_ms": 7.5
     }
   ]
 }
