@@ -1,0 +1,1 @@
+"""PostgreSQL (+pgvector) persistence adapters."""
