@@ -55,7 +55,7 @@ async def test_streams_words_that_rebuild_the_answer() -> None:
     llm = ExtractiveLLM(None, min_similarity=0.1)
     request = GenerationRequest(question="vacation per month", sources=[source(1, VACATION)])
     pieces = [p async for p in llm.stream(request)]
-    assert len(pieces) > 3
+    assert len(pieces) >= 2  # streamed in several deltas, not one blob
     assert "".join(pieces) == await llm.compose(request)
     assert llm.name == "extractive"
 

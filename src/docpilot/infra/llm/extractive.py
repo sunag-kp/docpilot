@@ -22,6 +22,7 @@ from docpilot.domain.text import content_terms, split_sentences
 from docpilot.services.ports import Embedder
 
 _LEXICAL_WEIGHT = 0.15  # tie-breaker for exact identifiers ("NW-4012") embeddings blur
+_WORDS_PER_DELTA = 4
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,8 +62,10 @@ class ExtractiveLLM:
     async def stream(self, request: GenerationRequest) -> AsyncIterator[str]:
         answer = await self.compose(request)
         words = answer.split(" ")
-        for i, word in enumerate(words):
-            yield word if i == len(words) - 1 else f"{word} "
+        # A few words per event: still streams visibly, at a fraction of the per-event cost.
+        for start in range(0, len(words), _WORDS_PER_DELTA):
+            piece = " ".join(words[start : start + _WORDS_PER_DELTA])
+            yield piece if start + _WORDS_PER_DELTA >= len(words) else f"{piece} "
             await asyncio.sleep(0)  # cooperative: lets a disconnected client cancel us
 
     async def compose(self, request: GenerationRequest) -> str:
