@@ -1,6 +1,6 @@
 # Load test — 2026-10-22-sandbox-no-embedding-cache
 
-Commit `f45d235` · 4 vCPU (Intel(R) Xeon(R) Processor @ 2.80GHz) · 15.7 GB RAM · API, 2 workers, Postgres, Redis, Redpanda, MinIO, Prometheus, Grafana, Jaeger and Locust all share this one machine.
+Commit `e763485` · 4 vCPU (Intel(R) Xeon(R) Processor @ 2.80GHz) · 15.7 GB RAM · API, 2 workers, Postgres, Redis, Redpanda, MinIO, Prometheus, Grafana, Jaeger and Locust all share this one machine.
 
 Configuration: identical to 2026-10-22-sandbox except EMBEDDING_CACHE_SIZE=0 (no embedding cache): the A/B baseline, run back to back on the same machine.
 

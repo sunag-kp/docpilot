@@ -1,7 +1,7 @@
 # Hand audit of the LLM judge — `ollama-qwen2.5-3b-judge-llama3.1-8b`
 
-Run: Evaluation workflow on commit `8f7d1df` (GitHub Actions, CPU-only runner), copied
-from the `eval-results` branch (`runs/8f7d1df/`). Generator `qwen2.5:3b`, judge
+Run: Evaluation workflow on commit `58b4eee` (GitHub Actions, CPU-only runner), copied
+from the `eval-results` branch (`runs/58b4eee/`). Generator `qwen2.5:3b`, judge
 `llama3.1:8b`, both served by Ollama.
 
 The judge labelled 50 sentences from the 46 non-refused answers: 45 SUPPORTED and 5

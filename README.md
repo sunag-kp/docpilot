@@ -186,7 +186,7 @@ Caveats: 56 questions is a small set, and the extractive refusal threshold was t
 
 ### Performance (Locust)
 
-These numbers come from `make load-test` ([`benchmarks/`](benchmarks/)) at commit `f45d235`. The run used one 4-vCPU Xeon (2.8 GHz) VM with 15.7 GB RAM, which ran **everything**: the API, 2 workers, Postgres, Redis, Redpanda, MinIO, Prometheus, Grafana, Jaeger and the Locust load generator. The configuration was local MiniLM embeddings with the default extractive answerer. Treat the numbers as a floor rather than a capacity claim.
+These numbers come from `make load-test` ([`benchmarks/`](benchmarks/)) at commit `e763485`. The run used one 4-vCPU Xeon (2.8 GHz) VM with 15.7 GB RAM, which ran **everything**: the API, 2 workers, Postgres, Redis, Redpanda, MinIO, Prometheus, Grafana, Jaeger and the Locust load generator. The configuration was local MiniLM embeddings with the default extractive answerer. Treat the numbers as a floor rather than a capacity claim.
 
 | Query API | p50 | p95 | Throughput | Failures |
 |---|---|---|---|---|

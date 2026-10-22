@@ -1,6 +1,6 @@
 # Load test — 2026-10-22-sandbox
 
-Commit `f45d235` · 4 vCPU (Intel(R) Xeon(R) Processor @ 2.80GHz) · 15.7 GB RAM · API, 2 workers, Postgres, Redis, Redpanda, MinIO, Prometheus, Grafana, Jaeger and Locust all share this one machine.
+Commit `e763485` · 4 vCPU (Intel(R) Xeon(R) Processor @ 2.80GHz) · 15.7 GB RAM · API, 2 workers, Postgres, Redis, Redpanda, MinIO, Prometheus, Grafana, Jaeger and Locust all share this one machine.
 
 Configuration: local MiniLM embeddings (ONNX, CPU) with a 10k-entry embedding LRU cache, BM25 + pgvector hybrid retrieval, built-in extractive answerer (no LLM), 1 API process, 2 ingestion workers, rate limit raised for the test, 5% trace sampling.
 
