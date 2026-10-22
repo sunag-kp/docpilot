@@ -7,6 +7,17 @@
 # ---------------------------------------------------------------------------------------
 ARG PYTHON_IMAGE=python:3.12-slim
 
+FROM node:22-alpine AS ui
+WORKDIR /ui
+COPY ui/package.json ui/package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=secret,id=ca_bundle,required=false \
+    if [ -s /run/secrets/ca_bundle ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/ca_bundle; fi; \
+    npm ci --no-audit --no-fund
+COPY ui ./
+COPY eval/corpus_src /eval/corpus_src
+RUN npm run build
+
 FROM ${PYTHON_IMAGE} AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy UV_PYTHON_DOWNLOADS=never PIP_DISABLE_PIP_VERSION_CHECK=1
 WORKDIR /app
@@ -22,15 +33,25 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-dev --no-editable
+# Bake the local embedding model into the image: containers start with no network access.
+RUN --mount=type=secret,id=ca_bundle,required=false \
+    if [ -s /run/secrets/ca_bundle ]; then \
+      export SSL_CERT_FILE=/run/secrets/ca_bundle REQUESTS_CA_BUNDLE=/run/secrets/ca_bundle; \
+    fi; \
+    /app/.venv/bin/python -m docpilot.infra.embeddings.model_download --cache-dir /models
 
 FROM ${PYTHON_IMAGE} AS runtime
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/app/.venv/bin:${PATH}"
+    PATH="/app/.venv/bin:${PATH}" \
+    HF_HUB_OFFLINE=1 \
+    EMBEDDING_MODEL_PATH=/models/sentence-transformers--all-MiniLM-L6-v2
 RUN groupadd --system --gid 10001 docpilot \
     && useradd --system --uid 10001 --gid docpilot --home-dir /app --shell /usr/sbin/nologin docpilot
 WORKDIR /app
 COPY --from=builder --chown=docpilot:docpilot /app/.venv /app/.venv
+COPY --from=builder --chown=docpilot:docpilot /models /models
+COPY --from=ui --chown=docpilot:docpilot /ui/dist ./ui/dist
 COPY --chown=docpilot:docpilot alembic.ini ./
 COPY --chown=docpilot:docpilot migrations ./migrations
 USER docpilot

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -125,6 +125,7 @@ class Settings(BaseSettings):
     embedding_dim: int = Field(default=384, ge=8, le=4096)
     embedding_batch_size: int = Field(default=32, ge=1)
     embedding_threads: int | None = Field(default=None, ge=1)
+    embedding_cache_size: int = Field(default=10_000, ge=0)  # 0 disables the LRU cache
     openai_api_key: SecretStr | None = None
     openai_base_url: str | None = None
     openai_embedding_model: str = "text-embedding-3-small"
@@ -133,6 +134,7 @@ class Settings(BaseSettings):
     retrieval_top_k: int = Field(default=5, ge=1, le=20)
     retrieval_candidates: int = Field(default=30, ge=1, le=200)
     rrf_k: int = Field(default=60, ge=1)
+    keyword_ranker: Literal["bm25", "ts_rank"] = "bm25"
     min_vector_similarity: float = Field(default=0.15, ge=-1.0, le=1.0)
     reranker: RerankerKind = RerankerKind.NONE
     reranker_model: str = "Xenova/ms-marco-MiniLM-L-6-v2"
@@ -143,7 +145,12 @@ class Settings(BaseSettings):
     llm_max_tokens: int = Field(default=700, ge=16)
     llm_temperature: float = Field(default=0.0, ge=0.0, le=1.0)
     llm_timeout_seconds: float = Field(default=60.0, gt=0)
+    # Extractive answerer: minimum question/sentence cosine similarity to answer at all.
+    extractive_min_similarity: float = Field(default=0.4, ge=-1.0, le=1.0)
     anthropic_api_key: SecretStr | None = None
+    # Thinking tokens count toward max_tokens, hence a budget well above the answer length.
+    anthropic_effort: Literal["low", "medium", "high", "xhigh", "max"] = "low"
+    anthropic_max_tokens: int = Field(default=8000, ge=256)
     ollama_base_url: str = "http://localhost:11434"
 
     # --- caching -------------------------------------------------------------------------
@@ -187,11 +194,19 @@ class Settings(BaseSettings):
             raise ValueError("LLM_PROVIDER=openai requires OPENAI_API_KEY")
         if self.llm_provider is LLMProvider.ANTHROPIC and self.anthropic_api_key is None:
             raise ValueError("LLM_PROVIDER=anthropic requires ANTHROPIC_API_KEY")
+        if self.resolved_llm_provider is LLMProvider.ANTHROPIC and not self.llm_model:
+            raise ValueError("the Anthropic provider requires LLM_MODEL (an Anthropic model id)")
         return self
 
     @property
     def max_upload_bytes(self) -> int:
         return self.max_upload_mb * 1024 * 1024
+
+    @property
+    def resolved_llm_model(self) -> str:
+        if self.llm_model:
+            return self.llm_model
+        return _DEFAULT_MODELS.get(self.resolved_llm_provider, self.resolved_llm_provider.value)
 
     @property
     def resolved_llm_provider(self) -> LLMProvider:
@@ -203,6 +218,12 @@ class Settings(BaseSettings):
         if self.openai_api_key is not None:
             return LLMProvider.OPENAI
         return LLMProvider.EXTRACTIVE
+
+
+_DEFAULT_MODELS = {
+    LLMProvider.OLLAMA: "qwen2.5:1.5b",
+    LLMProvider.OPENAI: "gpt-4o-mini",
+}
 
 
 @lru_cache(maxsize=1)

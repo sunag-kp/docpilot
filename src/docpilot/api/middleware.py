@@ -10,13 +10,19 @@ import structlog
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from docpilot.observability.logging import get_logger
+from docpilot.observability.metrics import HTTP_IN_FLIGHT, HTTP_LATENCY, HTTP_REQUESTS
 
 _log = get_logger("docpilot.access")
+_UNTRACKED_PATHS = frozenset({"/metrics"})
 _REQUEST_ID_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
 
 
 class RequestContextMiddleware:
-    """Assigns a request id, binds it to the log context and emits one access log line."""
+    """Request id + log context, one access log line, and RED metrics per route.
+
+    Metrics are labelled with the route *template* (``/v1/documents/{document_id}``), not
+    the raw path, so label cardinality stays bounded.
+    """
 
     def __init__(self, app: ASGIApp) -> None:
         self.app = app
@@ -34,11 +40,14 @@ class RequestContextMiddleware:
 
         status_code = 500
         started = time.perf_counter()
+        first_byte: float | None = None
+        HTTP_IN_FLIGHT.inc()
 
         async def send_wrapper(message: Message) -> None:
-            nonlocal status_code
+            nonlocal status_code, first_byte
             if message["type"] == "http.response.start":
                 status_code = message["status"]
+                first_byte = time.perf_counter()
                 headers = list(message.get("headers", []))
                 headers.append((b"x-request-id", request_id.encode()))
                 message["headers"] = headers
@@ -47,7 +56,17 @@ class RequestContextMiddleware:
         try:
             await self.app(scope, receive, send_wrapper)
         finally:
+            HTTP_IN_FLIGHT.dec()
             path = scope.get("path", "")
+            route = getattr(scope.get("route"), "path", None) or "unmatched"
+            method = scope.get("method", "")
+            if path not in _UNTRACKED_PATHS:
+                HTTP_REQUESTS.labels(method, route, str(status_code)).inc()
+                # Time to response headers: for SSE that is time-to-stream-start, not the
+                # stream's whole lifetime (which would make latency look like a timeout).
+                HTTP_LATENCY.labels(method, route).observe(
+                    (first_byte or time.perf_counter()) - started
+                )
             if path not in {"/healthz", "/metrics"}:
                 _log.info(
                     "http_request",
@@ -57,3 +76,58 @@ class RequestContextMiddleware:
                     duration_ms=round((time.perf_counter() - started) * 1000, 2),
                 )
             structlog.contextvars.clear_contextvars()
+
+
+class BodySizeLimitMiddleware:
+    """Reject oversized request bodies before they are parsed or spooled to disk."""
+
+    def __init__(self, app: ASGIApp, max_bytes: int) -> None:
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        declared = dict(scope["headers"]).get(b"content-length")
+        if declared is not None and declared.isdigit() and int(declared) > self.max_bytes:
+            await _too_large(send)
+            return
+
+        received = 0
+
+        async def limited_receive() -> Message:
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > self.max_bytes:
+                    raise _BodyTooLargeError
+            return message
+
+        try:
+            await self.app(scope, limited_receive, send)
+        except _BodyTooLargeError:
+            await _too_large(send)
+
+
+class _BodyTooLargeError(Exception):
+    pass
+
+
+async def _too_large(send: Send) -> None:
+    body = (
+        b'{"type":"urn:docpilot:error:document_too_large","status":413,'
+        b'"detail":"request body too large"}'
+    )
+    await send(
+        {
+            "type": "http.response.start",
+            "status": 413,
+            "headers": [
+                (b"content-type", b"application/problem+json"),
+                (b"content-length", str(len(body)).encode()),
+            ],
+        }
+    )
+    await send({"type": "http.response.body", "body": body})

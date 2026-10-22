@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: docpilot
+    folder: DocPilot
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

@@ -36,3 +36,5 @@ ui/dist/
 .vscode/
 *.swp
 .DS_Store
+.models/
+ui/dist-demo/

@@ -73,9 +73,13 @@ def test_secrets_are_not_leaked_in_repr() -> None:
     [
         ({}, LLMProvider.EXTRACTIVE),
         ({"openai_api_key": SecretStr("sk-x")}, LLMProvider.OPENAI),
-        ({"anthropic_api_key": SecretStr("sk-ant-x")}, LLMProvider.ANTHROPIC),
+        ({"anthropic_api_key": SecretStr("sk-ant-x"), "llm_model": "m"}, LLMProvider.ANTHROPIC),
         (
-            {"openai_api_key": SecretStr("a"), "anthropic_api_key": SecretStr("b")},
+            {
+                "openai_api_key": SecretStr("a"),
+                "anthropic_api_key": SecretStr("b"),
+                "llm_model": "m",
+            },
             LLMProvider.ANTHROPIC,
         ),
         ({"llm_provider": LLMProvider.OLLAMA}, LLMProvider.OLLAMA),

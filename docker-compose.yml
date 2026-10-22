@@ -19,6 +19,14 @@ x-app: &app
     S3_ENDPOINT_URL: http://minio:9000
     S3_ACCESS_KEY_ID: minioadmin
     S3_SECRET_ACCESS_KEY: minioadmin
+    OTEL_ENABLED: "true"
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    # Overridable from the host shell, e.g. by `make load-test`:
+    OTEL_TRACES_SAMPLER: ${OTEL_TRACES_SAMPLER:-parentbased_always_on}
+    OTEL_TRACES_SAMPLER_ARG: ${OTEL_TRACES_SAMPLER_ARG:-1.0}
+    RATE_LIMIT_CAPACITY: ${RATE_LIMIT_CAPACITY:-60}
+    RATE_LIMIT_REFILL_PER_SEC: ${RATE_LIMIT_REFILL_PER_SEC:-1.0}
+    EMBEDDING_CACHE_SIZE: ${EMBEDDING_CACHE_SIZE:-10000}
   restart: unless-stopped
 
 services:
@@ -92,11 +100,52 @@ services:
   api:
     <<: *app
     ports: ["8000:8000"]
-    depends_on:
+    depends_on: &app-deps
       migrate: {condition: service_completed_successfully}
       redis: {condition: service_healthy}
       redpanda: {condition: service_healthy}
       minio: {condition: service_healthy}
+
+  worker:
+    <<: *app
+    command: ["docpilot-worker"]
+    # Two replicas in one consumer group: Kafka splits the topic's partitions between them.
+    deploy:
+      replicas: 2
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9100/metrics', timeout=2)"]
+      interval: 15s
+      timeout: 3s
+      start_period: 30s
+      retries: 3
+    depends_on: *app-deps
+
+  # --- observability ---------------------------------------------------------------
+  jaeger:
+    image: jaegertracing/jaeger:2.22.0
+    ports: ["16686:16686", "4318:4318"]
+
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=2d
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9090:9090"]
+
+  grafana:
+    image: grafana/grafana:13.0.11
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/docpilot.json
+    volumes:
+      - ./ops/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3000:3000"]
+    depends_on: [prometheus, jaeger]
 
 volumes:
   pgdata:
