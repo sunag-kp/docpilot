@@ -9,7 +9,7 @@ import pytest
 
 from docpilot.domain.answers import Citation, GenerationRequest
 from docpilot.evaluation.dataset import load_dataset
-from docpilot.evaluation.judge import FaithfulnessJudge, parse_verdict
+from docpilot.evaluation.judge import FaithfulnessJudge, answer_sentences, parse_verdict
 from docpilot.evaluation.metrics import (
     fact_recall,
     first_relevant_rank,
@@ -65,31 +65,25 @@ def test_dataset_rejects_unlabelled_items(tmp_path: Path) -> None:
         load_dataset(bad)
 
 
-def test_parse_verdict_tolerates_small_model_formatting() -> None:
-    raw = """Here are the claims:
-1. SUPPORTED: Employees accrue 1.75 days per month.
-- **UNSUPPORTED**: This applies to contractors.
-supported - carry-over is 8 days
-Some trailing chatter."""
-    verdict = parse_verdict(raw)
+def test_parse_verdict_reads_numbered_labels_and_tolerates_formatting() -> None:
+    raw = """Here are the labels:
+**1:** SUPPORTED
+Sentence 2 - Unsupported (the sources say April)
+3. Backups are kept for 35 days. SUPPORTED
+3: UNSUPPORTED
+7: SUPPORTED
+Some trailing chatter about what is SUPPORTED."""
+    verdict = parse_verdict(raw, sentence_count=4)
+    # 1 and 3 supported, 2 unsupported; the repeated 3, the out-of-range 7 and sentence 4
+    # (never labelled) don't count.
     assert (verdict.supported, verdict.unsupported) == (2, 1)
     assert verdict.faithfulness == pytest.approx(2 / 3)
-    assert parse_verdict("no structured output").faithfulness is None
+    assert parse_verdict("no structured output", sentence_count=2).faithfulness is None
 
 
-def test_parse_verdict_reads_labels_under_or_after_each_claim() -> None:
-    # Formats llama3.1:8b produced in CI: a header restating both labels, the label on its
-    # own line under the claim or at the end of it, and a closing note.
-    raw = """Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:
-
-1. You may carry over up to 8 unused PTO days into the next calendar year.
-SUPPORTED (Source 2)
-2. Carried-over days expire on March 31: UNSUPPORTED (Source 2 says April
-3. Database backups are kept for 35 days. SUPPORTED (source 1)
-
-Note: the ANSWER makes no other claims, so nothing else is UNSUPPORTED here."""
-    verdict = parse_verdict(raw)
-    assert (verdict.supported, verdict.unsupported) == (2, 1)
+def test_answer_sentences_drop_citation_markers() -> None:
+    answer = "Carry over up to 8 days [2]. They expire on March 31. [2] [3]"
+    assert answer_sentences(answer) == ["Carry over up to 8 days.", "They expire on March 31."]
 
 
 class ScriptedLLM:
@@ -106,12 +100,21 @@ class ScriptedLLM:
         yield self.reply
 
 
-async def test_judge_sends_sources_question_and_answer() -> None:
-    llm = ScriptedLLM("SUPPORTED: x\nSUPPORTED: y")
+async def test_judge_sends_sources_question_and_numbered_sentences() -> None:
+    llm = ScriptedLLM("1: SUPPORTED\n2: UNSUPPORTED")
     source = Citation(1, uuid4(), uuid4(), "h.md", "Employees accrue 1.75 days.")
-    verdict = await FaithfulnessJudge(llm).judge("How much PTO?", "1.75 days [1].", [source])
-    assert verdict.faithfulness == 1.0
+    verdict = await FaithfulnessJudge(llm).judge(
+        "How much PTO?", "Employees accrue 1.75 days [1]. It doubles after a year [1].", [source]
+    )
+    assert verdict.faithfulness == 0.5
     message = llm.requests[0].render_user_message()
     assert "Employees accrue 1.75 days." in message
-    assert "1.75 days [1]." in message
+    assert "1. Employees accrue 1.75 days.\n2. It doubles after a year." in message
     assert llm.requests[0].system.startswith("You are a strict fact-checking grader")
+
+
+async def test_judge_skips_answers_without_sentences() -> None:
+    llm = ScriptedLLM("1: SUPPORTED")
+    verdict = await FaithfulnessJudge(llm).judge("Q?", "[1]", [])
+    assert verdict.faithfulness is None
+    assert llm.requests == []

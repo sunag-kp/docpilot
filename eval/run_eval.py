@@ -414,7 +414,7 @@ def render_markdown(report: dict[str, Any]) -> str:
         f"| False refusals on answerable questions | {ans['false_refusal_rate']:.3f} |",
         "| Citation validity (cites only real sources, or refuses) "
         f"| {ans['citation_validity']:.3f} |",
-        f"| Faithfulness (LLM judge: supported claims / claims) | {faith} |",
+        f"| Faithfulness (LLM judge: supported sentences / sentences) | {faith} |",
         "| Answer latency p50 / p95 (ms) "
         f"| {ans['latency_ms_p50']:.0f} / {ans['latency_ms_p95']:.0f} |",
     ]
