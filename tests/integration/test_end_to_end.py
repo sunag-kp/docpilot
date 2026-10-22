@@ -91,3 +91,50 @@ async def test_upload_pdf_docx_markdown_through_kafka_to_ready(client: httpx.Asy
     chunks = (await client.get(f"/v1/documents/{ids['policy.pdf']}/chunks", headers=headers)).json()
     assert chunks[0]["section"] == "SECURITY POLICY"
     assert chunks[0]["page_start"] == 1
+
+
+async def test_ask_questions_stream_answers_and_cache_invalidation(
+    client: httpx.AsyncClient,
+) -> None:
+    signup = await client.post(
+        "/v1/auth/signup",
+        json={"tenant_name": "E2E", "email": f"{uuid4().hex}@e2e.io", "password": "s3cret-pass"},
+    )
+    headers = {"Authorization": f"Bearer {signup.json()['access_token']}"}
+    marker = uuid4().hex
+    leave = f"# Leave\n\nEmployees accrue 1.5 vacation days per month. Ref {marker}.\n"
+    first = await client.post(
+        "/v1/documents",
+        files={"file": ("leave.md", leave.encode())},
+        headers=headers,
+    )
+    await wait_for_status(client, first.json()["id"], headers, {"ready"})
+
+    question = {"question": "How many vacation days do employees accrue per month?"}
+    answer = (await client.post("/v1/query", json=question, headers=headers)).json()
+    assert "1.5 vacation days per month" in answer["answer"]
+    assert answer["cited_numbers"] == [1]
+    assert answer["cached"] is False
+
+    stream = await client.post("/v1/query/stream", json=question, headers=headers)
+    assert stream.headers["content-type"].startswith("text/event-stream")
+    assert "event: done" in stream.text
+    assert '"cached":true' in stream.text  # identical question served from Redis
+
+    second = await client.post(
+        "/v1/documents",
+        files={
+            "file": ("remote.md", f"# Remote\n\nRemote work is allowed. Ref {marker}.\n".encode())
+        },
+        headers=headers,
+    )
+    await wait_for_status(client, second.json()["id"], headers, {"ready"})
+    after_upload = (await client.post("/v1/query", json=question, headers=headers)).json()
+    assert after_upload["cached"] is False  # new document bumped the corpus version
+
+    refusal = (
+        await client.post(
+            "/v1/query", json={"question": "Who painted the Mona Lisa?"}, headers=headers
+        )
+    ).json()
+    assert refusal["refused"] is True

@@ -13,28 +13,43 @@ from pathlib import Path
 
 from redis.asyncio import Redis
 
-from docpilot.config import EmbeddingProvider, EventBusBackend, Settings, StorageBackend
+from docpilot.config import (
+    EmbeddingProvider,
+    EventBusBackend,
+    LLMProvider,
+    RerankerKind,
+    Settings,
+    StorageBackend,
+)
 from docpilot.domain.chunking import Chunker, ChunkingConfig
 from docpilot.infra.bus.memory import InMemoryEventBus
 from docpilot.infra.db.engine import create_engine, ping
 from docpilot.infra.db.repositories import SqlUnitOfWork
+from docpilot.infra.db.search import PgChunkSearch
 from docpilot.infra.embeddings.hashing import HashingEmbedder
+from docpilot.infra.llm.echo import EchoLLM
+from docpilot.infra.llm.extractive import ExtractiveLLM
 from docpilot.infra.parsing import DefaultDocumentParser
+from docpilot.infra.redis.cache import RedisAnswerCache
 from docpilot.infra.redis.ratelimit import RedisTokenBucketRateLimiter
 from docpilot.infra.security import JwtTokenCodec, ScryptPasswordHasher, SystemClock
 from docpilot.infra.storage.local import InMemoryObjectStorage, LocalObjectStorage
 from docpilot.observability.logging import get_logger
+from docpilot.services.answering import QuestionAnswering
 from docpilot.services.auth import AuthService
 from docpilot.services.documents import DocumentService
 from docpilot.services.ingestion import IngestionPipeline, RetryPolicy, StaleDocumentSweeper
 from docpilot.services.ports import (
+    LLM,
     Embedder,
     EventConsumer,
     EventPublisher,
     ObjectStorage,
     RateLimiter,
+    Reranker,
     UnitOfWork,
 )
+from docpilot.services.retrieval import HybridRetriever, RetrievalConfig
 
 _log = get_logger(__name__)
 
@@ -46,6 +61,7 @@ class Container:
     settings: Settings
     auth: AuthService | None = None
     documents: DocumentService | None = None
+    answering: QuestionAnswering | None = None
     rate_limiter: RateLimiter | None = None
     pipeline: IngestionPipeline | None = None
     sweeper: StaleDocumentSweeper | None = None
@@ -94,6 +110,53 @@ def build_embedder(settings: Settings) -> Embedder:
             )
 
 
+def build_llm(settings: Settings) -> LLM:
+    """Keyless by default; hosted providers only when explicitly configured with a key."""
+    provider, model = settings.resolved_llm_provider, settings.resolved_llm_model
+    match provider:
+        case LLMProvider.EXTRACTIVE | LLMProvider.AUTO:
+            return ExtractiveLLM()
+        case LLMProvider.ECHO:
+            return EchoLLM()
+        case LLMProvider.OLLAMA:
+            from docpilot.infra.llm.ollama import OllamaLLM  # noqa: PLC0415
+
+            return OllamaLLM(
+                model,
+                base_url=settings.ollama_base_url,
+                timeout_seconds=settings.llm_timeout_seconds,
+            )
+        case LLMProvider.OPENAI:
+            from docpilot.infra.llm.hosted import OpenAILLM  # noqa: PLC0415
+
+            assert settings.openai_api_key is not None
+            return OpenAILLM(
+                settings.openai_api_key.get_secret_value(),
+                model,
+                base_url=settings.openai_base_url,
+                timeout_seconds=settings.llm_timeout_seconds,
+            )
+        case LLMProvider.ANTHROPIC:
+            from docpilot.infra.llm.hosted import AnthropicLLM  # noqa: PLC0415
+
+            assert settings.anthropic_api_key is not None
+            return AnthropicLLM(
+                settings.anthropic_api_key.get_secret_value(),
+                model,
+                effort=settings.anthropic_effort,
+                max_tokens=settings.anthropic_max_tokens,
+                timeout_seconds=settings.llm_timeout_seconds,
+            )
+
+
+def build_reranker(settings: Settings) -> Reranker | None:
+    if settings.reranker is RerankerKind.CROSS_ENCODER:
+        from docpilot.infra.rerank import CrossEncoderReranker  # noqa: PLC0415
+
+        return CrossEncoderReranker(settings.reranker_model, cache_dir=settings.embedding_cache_dir)
+    return None
+
+
 async def build_container(settings: Settings) -> Container:
     container = Container(settings=settings)
     clock = SystemClock()
@@ -120,6 +183,11 @@ async def build_container(settings: Settings) -> Container:
     storage = await _build_storage(settings, container)
     publisher, consumer_factory = await _build_bus(settings, container)
     embedder = build_embedder(settings)
+    cache = RedisAnswerCache(redis, ttl_seconds=settings.cache_ttl_seconds)
+    on_corpus_changed = cache.bump_corpus_version
+    llm = build_llm(settings)
+    if (close_llm := getattr(llm, "aclose", None)) is not None:
+        container.closers.append(close_llm)
 
     container.auth = AuthService(
         uow_factory,
@@ -134,7 +202,28 @@ async def build_container(settings: Settings) -> Container:
         signup_enabled=settings.signup_enabled,
     )
     container.documents = DocumentService(
-        uow_factory, storage, publisher, clock, max_bytes=settings.max_upload_bytes
+        uow_factory,
+        storage,
+        publisher,
+        clock,
+        max_bytes=settings.max_upload_bytes,
+        on_corpus_changed=on_corpus_changed,
+    )
+    container.answering = QuestionAnswering(
+        HybridRetriever(
+            PgChunkSearch(engine, settings.embedding_dim),
+            embedder,
+            RetrievalConfig(
+                candidates=settings.retrieval_candidates,
+                rrf_k=settings.rrf_k,
+                min_vector_similarity=settings.min_vector_similarity,
+            ),
+            reranker=build_reranker(settings),
+        ),
+        llm,
+        cache if settings.cache_enabled else None,
+        max_tokens=settings.llm_max_tokens,
+        temperature=settings.llm_temperature,
     )
     container.rate_limiter = RedisTokenBucketRateLimiter(
         redis,
@@ -163,6 +252,7 @@ async def build_container(settings: Settings) -> Container:
         ),
         lease_seconds=settings.ingest_lease_seconds,
         embed_batch_size=settings.embedding_batch_size,
+        on_corpus_changed=on_corpus_changed,
     )
     container.sweeper = StaleDocumentSweeper(
         uow_factory, publisher, clock, stale_after_seconds=settings.ingest_lease_seconds * 2

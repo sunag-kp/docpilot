@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from docpilot import __version__
 from docpilot.api.errors import install_error_handlers
 from docpilot.api.middleware import BodySizeLimitMiddleware, RequestContextMiddleware
-from docpilot.api.routes import auth, documents, health
+from docpilot.api.routes import auth, documents, health, query
 from docpilot.config import EventBusBackend, Settings, get_settings
 from docpilot.container import Container, build_container
 from docpilot.observability.logging import configure_logging, get_logger
@@ -77,4 +77,5 @@ def create_app(
     app.include_router(health.router)
     app.include_router(auth.router)
     app.include_router(documents.router)
+    app.include_router(query.router)
     return app

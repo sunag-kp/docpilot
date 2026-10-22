@@ -13,6 +13,7 @@ from docpilot.container import Container
 from docpilot.domain.errors import AuthenticationError, RateLimitedError
 from docpilot.domain.models import Principal
 from docpilot.observability.metrics import RATE_LIMITED
+from docpilot.services.answering import QuestionAnswering
 from docpilot.services.auth import API_KEY_PREFIX, AuthService
 from docpilot.services.documents import DocumentService
 from docpilot.services.ports import RateLimiter
@@ -39,6 +40,11 @@ def get_document_service(container: ContainerDep) -> DocumentService:
     return container.documents
 
 
+def get_answering(container: ContainerDep) -> QuestionAnswering:
+    assert container.answering is not None
+    return container.answering
+
+
 def get_rate_limiter(container: ContainerDep) -> RateLimiter:
     assert container.rate_limiter is not None
     return container.rate_limiter
@@ -46,6 +52,7 @@ def get_rate_limiter(container: ContainerDep) -> RateLimiter:
 
 AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
 DocumentServiceDep = Annotated[DocumentService, Depends(get_document_service)]
+AnsweringDep = Annotated[QuestionAnswering, Depends(get_answering)]
 
 
 async def get_principal(
