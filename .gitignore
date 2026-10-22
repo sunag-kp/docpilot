@@ -1,0 +1,38 @@
+# Secrets — never commit real environment files
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.python-version
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.import_linter_cache/
+
+# Node / UI
+node_modules/
+ui/dist/
+*.tsbuildinfo
+
+# Local data
+.data/
+*.log
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
