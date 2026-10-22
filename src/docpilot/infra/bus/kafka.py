@@ -25,7 +25,7 @@ from opentelemetry import propagate, trace
 from docpilot.config import Settings
 from docpilot.domain.events import DeadLetter, DocumentUploaded
 from docpilot.observability.logging import get_logger
-from docpilot.observability.metrics import CONSUMER_ERRORS
+from docpilot.observability.metrics import CONSUMER_ERRORS, CONSUMER_LAG
 from docpilot.services.ports import EventHandler
 
 _log = get_logger(__name__)
@@ -137,6 +137,7 @@ class KafkaEventConsumer:
         self._semaphore = asyncio.Semaphore(concurrency)
         self._retry_backoff = retry_backoff_seconds
         self._stopping = asyncio.Event()
+        self._positions: dict[TopicPartition, int] = {}
         self._consumer = AIOKafkaConsumer(
             settings.kafka_topic_ingest,
             **_connection_kwargs(settings),
@@ -165,9 +166,21 @@ class KafkaEventConsumer:
                             for tp, records in batches.items()
                         )
                     )
+                await self._record_lag()
         finally:
             await self._consumer.stop()
             _log.info("kafka_consumer_stopped")
+
+    async def _record_lag(self) -> None:
+        """Lag = partition high-water mark minus our next offset (what scaling keys off)."""
+        for tp in self._consumer.assignment():
+            highwater = self._consumer.highwater(tp)
+            if highwater is None:
+                continue
+            position = self._positions.get(tp)
+            if position is None:
+                position = await self._consumer.position(tp)
+            CONSUMER_LAG.labels(tp.topic, str(tp.partition)).set(max(0, highwater - position))
 
     async def _process_partition(
         self, tp: TopicPartition, records: list[ConsumerRecord[bytes, bytes]], handler: EventHandler
@@ -183,6 +196,7 @@ class KafkaEventConsumer:
                 _log.error("kafka_poison_message", partition=tp.partition, offset=record.offset)
                 await self._publisher.publish_raw_dead_letter(record.value or b"", repr(exc))
                 await self._consumer.commit({tp: record.offset + 1})
+                self._positions[tp] = record.offset + 1
                 continue
 
             parent = _extract_trace_context(record.headers)
@@ -201,3 +215,4 @@ class KafkaEventConsumer:
                 await asyncio.sleep(self._retry_backoff * random.uniform(0.5, 1.5))  # noqa: S311
                 return
             await self._consumer.commit({tp: record.offset + 1})
+            self._positions[tp] = record.offset + 1

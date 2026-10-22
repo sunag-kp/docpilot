@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 
 from fastapi import APIRouter, Request, Response, status
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from pydantic import BaseModel
 
 from docpilot import __version__
@@ -53,3 +54,9 @@ async def readyz(request: Request, response: Response) -> ReadinessResponse:
     if not healthy:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     return ReadinessResponse(status="ok" if healthy else "degraded", checks=report)
+
+
+@router.get("/metrics", include_in_schema=False)
+async def metrics() -> Response:
+    """Prometheus scrape endpoint."""
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)

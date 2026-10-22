@@ -48,6 +48,11 @@ INGEST_REPUBLISHED = Counter(
 CONSUMER_ERRORS = Counter(
     "docpilot_consumer_errors_total", "Unhandled errors in the event consumer loop"
 )
+CONSUMER_LAG = Gauge(
+    "docpilot_consumer_lag_messages",
+    "Messages not yet consumed, per assigned partition",
+    ["topic", "partition"],
+)
 
 # --- query -----------------------------------------------------------------------------
 QUERY_STAGE_SECONDS = Histogram(
