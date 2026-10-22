@@ -1,10 +1,9 @@
 name: Deploy (Hugging Face Space)
 
-# Builds the single-container image (deploy/huggingface), boots it the way the Space runs it
-# and runs the end-to-end smoke test. On main it then uploads the source to the free
-# Hugging Face Space, which builds and serves the full app.
-# Needs the HF_TOKEN repository secret (a Hugging Face "Write" token); without it the
-# upload is skipped. The HF_SPACE repository variable overrides the target Space.
+# Builds the single-container image (deploy/huggingface), boots it the way a Space runs it
+# and runs the end-to-end smoke test. The upload to a Hugging Face Space is opt-in: Docker
+# Spaces need a Hugging Face PRO plan since mid-2026, so it runs only when the HF_SPACE
+# repository variable (<user>/<space>) and the HF_TOKEN secret are both set.
 on:
   push:
     branches: [main]
@@ -28,7 +27,7 @@ concurrency:
 
 env:
   UV_VERSION: "0.11.32"
-  HF_SPACE: ${{ vars.HF_SPACE || 'Sunagkp/docpilot' }}
+  HF_SPACE: ${{ vars.HF_SPACE }}
 
 jobs:
   deploy:
@@ -54,10 +53,9 @@ jobs:
         if: failure()
         run: docker logs space
       - name: Upload to the Space
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && env.HF_TOKEN != ''
+        if: >-
+          github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+          && env.HF_SPACE != '' && env.HF_TOKEN != ''
         run: |
           uv run --no-project --with huggingface_hub==1.33.0 \
             python deploy/huggingface/upload.py "$RUNNER_TEMP/space"
-      - name: Report a missing token
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && env.HF_TOKEN == ''
-        run: echo "::warning::The HF_TOKEN secret is not set, so the Space was not updated."
