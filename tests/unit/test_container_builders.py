@@ -7,6 +7,7 @@ from pydantic import SecretStr
 
 from docpilot.config import EmbeddingProvider, LLMProvider, RerankerKind, Settings
 from docpilot.container import build_embedder, build_llm, build_reranker
+from docpilot.infra.embeddings.cache import CachingEmbedder
 from docpilot.infra.embeddings.hashing import HashingEmbedder
 from docpilot.infra.embeddings.openai import OpenAIEmbedder
 
@@ -36,13 +37,21 @@ def test_llm_selection(
 
 def test_embedder_selection(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("EMBEDDING_PROVIDER", raising=False)
-    assert isinstance(
-        build_embedder(make(embedding_provider=EmbeddingProvider.HASHING)), HashingEmbedder
-    )
+    hashing = build_embedder(make(embedding_provider=EmbeddingProvider.HASHING))
+    assert isinstance(hashing, HashingEmbedder)  # microsecond-fast: never worth caching
     hosted = build_embedder(
         make(embedding_provider=EmbeddingProvider.OPENAI, openai_api_key=SecretStr("k"))
     )
-    assert isinstance(hosted, OpenAIEmbedder)
+    assert isinstance(hosted, CachingEmbedder)
+    assert isinstance(hosted._inner, OpenAIEmbedder)
+    uncached = build_embedder(
+        make(
+            embedding_provider=EmbeddingProvider.OPENAI,
+            openai_api_key=SecretStr("k"),
+            embedding_cache_size=0,
+        )
+    )
+    assert isinstance(uncached, OpenAIEmbedder)
 
 
 def test_reranker_is_off_by_default() -> None:
