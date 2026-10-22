@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from docpilot import __version__
 from docpilot.api.errors import install_error_handlers
@@ -78,4 +80,8 @@ def create_app(
     app.include_router(auth.router)
     app.include_router(documents.router)
     app.include_router(query.router)
+    ui = Path(settings.ui_dist_path)
+    if (ui / "index.html").is_file():
+        # Same-origin UI: no CORS, and the API routes above always take precedence.
+        app.mount("/", StaticFiles(directory=ui, html=True), name="ui")
     return app
