@@ -76,8 +76,18 @@ def reciprocal_rank_fusion(
                 )
             )
     fused = [replace(chunk, fused_score=scores[cid]) for cid, chunk in merged.items()]
-    # Ties broken deterministically by chunk id so results are reproducible.
-    fused.sort(key=lambda c: (-c.fused_score, str(c.chunk_id)))
+    # Symmetric ranks (1st + 2nd vs 2nd + 1st) tie exactly. Break ties with the evidence
+    # itself — semantic similarity, then keyword score, then position in the document — so
+    # results are reproducible across re-ingestion (chunk ids are random UUIDs).
+    fused.sort(
+        key=lambda c: (
+            -c.fused_score,
+            -(c.vector_similarity if c.vector_similarity is not None else -2.0),
+            -(c.keyword_rank or 0.0),
+            c.filename,
+            c.index,
+        )
+    )
     return fused
 
 
