@@ -16,12 +16,23 @@ from docpilot.services.ports import LLM
 JUDGE_SYSTEM = """You are a strict fact-checking grader. You receive numbered source \
 passages and an ANSWER that was written from them.
 
-List every factual claim made in the ANSWER, one per line. Start each line with \
-SUPPORTED: if the sources explicitly state the claim, or UNSUPPORTED: if they do not \
+List every factual claim the ANSWER itself makes (not facts that appear only in the \
+sources), one per line, in exactly this format:
+SUPPORTED: <claim>
+UNSUPPORTED: <claim>
+Use SUPPORTED if the sources explicitly state the claim and UNSUPPORTED if they do not \
 (including claims that are plausible but absent from the sources). Ignore citation \
-markers such as [1]. Output only these lines."""
+markers such as [1]. Output only these lines, with no notes."""
 
-_LINE = re.compile(r"^\s*[-*\d.)\s]*\**\s*(SUPPORTED|UNSUPPORTED)\**\s*[:\-]", re.IGNORECASE)
+# Small models don't always follow the format, so a label is accepted where it opens a line
+# ("1. SUPPORTED: claim", "**UNSUPPORTED** - claim", "SUPPORTED (Source 2)" under the claim)
+# or closes one ("2. claim: UNSUPPORTED (source 1 says otherwise)"). Lines naming both labels
+# are the model restating the instructions and are skipped.
+_LEADING = re.compile(
+    r"^\s*[-*\d.)\s]*\**\s*(SUPPORTED|UNSUPPORTED)\**\s*(?:[:\-(]|$)", re.IGNORECASE
+)
+_TRAILING = re.compile(r"\b(SUPPORTED|UNSUPPORTED)\**\s*(?:\([^)]*\)?)?\s*\.?\s*$")
+_LABEL = re.compile(r"\b(?:UN)?SUPPORTED\b")
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,7 +53,9 @@ class Verdict:
 def parse_verdict(raw: str) -> Verdict:
     supported = unsupported = 0
     for line in raw.splitlines():
-        match = _LINE.match(line)
+        if len(_LABEL.findall(line)) > 1:
+            continue
+        match = _LEADING.match(line) or _TRAILING.search(line)
         if match is None:
             continue
         if match.group(1).upper() == "SUPPORTED":

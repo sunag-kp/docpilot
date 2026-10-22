@@ -77,6 +77,21 @@ Some trailing chatter."""
     assert parse_verdict("no structured output").faithfulness is None
 
 
+def test_parse_verdict_reads_labels_under_or_after_each_claim() -> None:
+    # Formats llama3.1:8b produced in CI: a header restating both labels, the label on its
+    # own line under the claim or at the end of it, and a closing note.
+    raw = """Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:
+
+1. You may carry over up to 8 unused PTO days into the next calendar year.
+SUPPORTED (Source 2)
+2. Carried-over days expire on March 31: UNSUPPORTED (Source 2 says April
+3. Database backups are kept for 35 days. SUPPORTED (source 1)
+
+Note: the ANSWER makes no other claims, so nothing else is UNSUPPORTED here."""
+    verdict = parse_verdict(raw)
+    assert (verdict.supported, verdict.unsupported) == (2, 1)
+
+
 class ScriptedLLM:
     def __init__(self, reply: str) -> None:
         self.reply = reply
