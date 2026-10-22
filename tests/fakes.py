@@ -25,7 +25,9 @@ from docpilot.domain.models import (
     Tenant,
     User,
 )
-from docpilot.services.ports import RateLimitDecision
+from docpilot.domain.retrieval import ScoredChunk
+from docpilot.infra.embeddings.hashing import HashingEmbedder
+from docpilot.services.ports import CachedAnswer, RateLimitDecision
 
 
 class FixedClock:
@@ -296,3 +298,129 @@ class FlakyEmbedder:
 
     async def embed_query(self, text: str) -> list[float]:
         return (await self.embed_documents([text]))[0]
+
+
+class InMemoryChunkSearch:
+    """Brute-force vector + term-overlap search over an in-memory corpus."""
+
+    def __init__(self, embedder: HashingEmbedder) -> None:
+        self._embedder = embedder
+        self.corpus: list[tuple[UUID, ScoredChunk, list[float]]] = []
+        self.calls: list[str] = []
+
+    async def add(self, tenant_id: UUID, text: str, *, section: str | None = None) -> ScoredChunk:
+        chunk = ScoredChunk(
+            chunk_id=uuid4(),
+            document_id=uuid4(),
+            filename="doc.md",
+            index=len(self.corpus),
+            text=text,
+            section=section,
+        )
+        self.corpus.append((tenant_id, chunk, await self._embedder.embed_query(text)))
+        return chunk
+
+    async def vector_search(
+        self,
+        tenant_id: UUID,
+        embedding: Sequence[float],
+        limit: int,
+        document_ids: Sequence[UUID] | None = None,
+    ) -> list[ScoredChunk]:
+        self.calls.append("vector")
+        scored = [
+            replace(
+                chunk, vector_similarity=sum(a * b for a, b in zip(vec, embedding, strict=True))
+            )
+            for tid, chunk, vec in self.corpus
+            if tid == tenant_id and (not document_ids or chunk.document_id in document_ids)
+        ]
+        scored.sort(key=lambda c: -(c.vector_similarity or 0))
+        return scored[:limit]
+
+    async def keyword_search(
+        self,
+        tenant_id: UUID,
+        query: str,
+        limit: int,
+        document_ids: Sequence[UUID] | None = None,
+    ) -> list[ScoredChunk]:
+        from docpilot.domain.text import content_terms
+
+        self.calls.append("keyword")
+        terms = set(content_terms(query))
+        hits = []
+        for tid, chunk, _ in self.corpus:
+            if tid != tenant_id or (document_ids and chunk.document_id not in document_ids):
+                continue
+            overlap = len(terms & set(content_terms(chunk.text)))
+            if overlap:
+                hits.append(replace(chunk, keyword_rank=overlap / (overlap + 1)))
+        hits.sort(key=lambda c: -(c.keyword_rank or 0))
+        return hits[:limit]
+
+
+class InMemoryAnswerCache:
+    def __init__(self) -> None:
+        self.entries: dict[str, CachedAnswer] = {}
+        self.versions: dict[UUID, int] = {}
+
+    async def get(self, keys: Sequence[str]) -> CachedAnswer | None:
+        return next((self.entries[k] for k in keys if k in self.entries), None)
+
+    async def set(self, keys: Sequence[str], answer: CachedAnswer) -> None:
+        for key in keys:
+            self.entries[key] = answer
+
+    async def corpus_version(self, tenant_id: UUID) -> int:
+        return self.versions.get(tenant_id, 0)
+
+    async def bump_corpus_version(self, tenant_id: UUID) -> None:
+        self.versions[tenant_id] = self.versions.get(tenant_id, 0) + 1
+
+
+class StateChunkSearch(InMemoryChunkSearch):
+    """Searches the chunks the in-memory ingestion pipeline wrote into ``InMemoryState``."""
+
+    def __init__(self, embedder: HashingEmbedder, state: InMemoryState) -> None:
+        super().__init__(embedder)
+        self._state = state
+
+    def _sync(self) -> None:
+        self.corpus = [
+            (
+                chunk.tenant_id,
+                ScoredChunk(
+                    chunk_id=chunk.id,
+                    document_id=chunk.document_id,
+                    filename=self._state.documents[chunk.document_id].filename,
+                    index=chunk.index,
+                    text=chunk.text,
+                    section=chunk.section,
+                ),
+                vector,
+            )
+            for chunks in self._state.chunks.values()
+            for chunk, vector in chunks
+            if chunk.document_id in self._state.documents
+        ]
+
+    async def vector_search(
+        self,
+        tenant_id: UUID,
+        embedding: Sequence[float],
+        limit: int,
+        document_ids: Sequence[UUID] | None = None,
+    ) -> list[ScoredChunk]:
+        self._sync()
+        return await super().vector_search(tenant_id, embedding, limit, document_ids)
+
+    async def keyword_search(
+        self,
+        tenant_id: UUID,
+        query: str,
+        limit: int,
+        document_ids: Sequence[UUID] | None = None,
+    ) -> list[ScoredChunk]:
+        self._sync()
+        return await super().keyword_search(tenant_id, query, limit, document_ids)
