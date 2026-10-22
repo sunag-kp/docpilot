@@ -25,6 +25,15 @@ _log = get_logger(__name__)
 _MULTIPART_OVERHEAD_BYTES = 1024 * 1024
 
 
+def instrument_app(app: FastAPI, settings: Settings) -> None:
+    """Server spans for every request (health/metrics probes excluded)."""
+    if not settings.otel_enabled:
+        return
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor  # noqa: PLC0415
+
+    FastAPIInstrumentor.instrument_app(app, excluded_urls="healthz,readyz,metrics")
+
+
 def create_app(
     settings: Settings | None = None,
     container_factory: ContainerFactory = build_container,
@@ -64,6 +73,8 @@ def create_app(
         lifespan=lifespan,
     )
     install_error_handlers(app)
+    configure_tracing(settings, service_suffix="api")
+    instrument_app(app, settings)
     if settings.cors_origins:
         app.add_middleware(
             CORSMiddleware,
