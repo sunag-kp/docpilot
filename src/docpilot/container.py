@@ -110,12 +110,12 @@ def build_embedder(settings: Settings) -> Embedder:
             )
 
 
-def build_llm(settings: Settings) -> LLM:
+def build_llm(settings: Settings, embedder: Embedder | None = None) -> LLM:
     """Keyless by default; hosted providers only when explicitly configured with a key."""
     provider, model = settings.resolved_llm_provider, settings.resolved_llm_model
     match provider:
         case LLMProvider.EXTRACTIVE | LLMProvider.AUTO:
-            return ExtractiveLLM()
+            return ExtractiveLLM(embedder, min_similarity=settings.extractive_min_similarity)
         case LLMProvider.ECHO:
             return EchoLLM()
         case LLMProvider.OLLAMA:
@@ -185,7 +185,7 @@ async def build_container(settings: Settings) -> Container:
     embedder = build_embedder(settings)
     cache = RedisAnswerCache(redis, ttl_seconds=settings.cache_ttl_seconds)
     on_corpus_changed = cache.bump_corpus_version
-    llm = build_llm(settings)
+    llm = build_llm(settings, embedder)
     if (close_llm := getattr(llm, "aclose", None)) is not None:
         container.closers.append(close_llm)
 
@@ -211,7 +211,7 @@ async def build_container(settings: Settings) -> Container:
     )
     container.answering = QuestionAnswering(
         HybridRetriever(
-            PgChunkSearch(engine, settings.embedding_dim),
+            PgChunkSearch(engine, settings.embedding_dim, keyword_ranker=settings.keyword_ranker),
             embedder,
             RetrievalConfig(
                 candidates=settings.retrieval_candidates,

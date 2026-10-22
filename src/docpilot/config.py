@@ -133,6 +133,7 @@ class Settings(BaseSettings):
     retrieval_top_k: int = Field(default=5, ge=1, le=20)
     retrieval_candidates: int = Field(default=30, ge=1, le=200)
     rrf_k: int = Field(default=60, ge=1)
+    keyword_ranker: Literal["bm25", "ts_rank"] = "bm25"
     min_vector_similarity: float = Field(default=0.15, ge=-1.0, le=1.0)
     reranker: RerankerKind = RerankerKind.NONE
     reranker_model: str = "Xenova/ms-marco-MiniLM-L-6-v2"
@@ -143,6 +144,8 @@ class Settings(BaseSettings):
     llm_max_tokens: int = Field(default=700, ge=16)
     llm_temperature: float = Field(default=0.0, ge=0.0, le=1.0)
     llm_timeout_seconds: float = Field(default=60.0, gt=0)
+    # Extractive answerer: minimum question/sentence cosine similarity to answer at all.
+    extractive_min_similarity: float = Field(default=0.4, ge=-1.0, le=1.0)
     anthropic_api_key: SecretStr | None = None
     # Opus 5.5 always thinks and thinking counts toward max_tokens, hence a larger budget.
     anthropic_effort: Literal["low", "medium", "high", "xhigh", "max"] = "low"
