@@ -769,6 +769,7 @@ dependencies = [
 dev = [
     { name = "asgi-lifespan" },
     { name = "boto3-stubs", extra = ["s3"] },
+    { name = "fpdf2" },
     { name = "import-linter" },
     { name = "mypy" },
     { name = "pytest" },
@@ -819,6 +820,7 @@ requires-dist = [
 dev = [
     { name = "asgi-lifespan", specifier = ">=2.1" },
     { name = "boto3-stubs", extras = ["s3"], specifier = ">=1.35" },
+    { name = "fpdf2", specifier = ">=2.8" },
     { name = "import-linter", specifier = ">=2.1" },
     { name = "mypy", specifier = ">=1.13" },
     { name = "pytest", specifier = ">=8.3" },
