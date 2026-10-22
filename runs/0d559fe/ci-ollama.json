@@ -1,0 +1,1102 @@
+{
+  "generated_at": "2026-10-22T19:44:10+00:00",
+  "config": {
+    "embedding": "fastembed:sentence-transformers/all-MiniLM-L6-v2",
+    "llm": "ollama:qwen2.5:3b",
+    "judge": "ollama:llama3.1:8b",
+    "answer_top_k": 5,
+    "retrieval_candidates": 30,
+    "rrf_k": 60,
+    "keyword_ranker": "bm25",
+    "extractive_min_similarity": 0.4,
+    "min_vector_similarity": 0.15,
+    "chunk_max_tokens": 320,
+    "python": "3.12.3",
+    "machine": "x86_64"
+  },
+  "dataset": {
+    "questions": 56,
+    "answerable": 48,
+    "unanswerable": 8
+  },
+  "ingestion": {
+    "documents": 8,
+    "chunks": 44,
+    "seconds": 0.9,
+    "formats": [
+      "docx",
+      "markdown",
+      "pdf"
+    ]
+  },
+  "retrieval": {
+    "hybrid": {
+      "hit@1": 0.896,
+      "hit@3": 0.979,
+      "hit@5": 1.0,
+      "hit@10": 1.0,
+      "mrr@10": 0.935
+    },
+    "vector": {
+      "hit@1": 0.917,
+      "hit@3": 0.979,
+      "hit@5": 0.979,
+      "hit@10": 1.0,
+      "mrr@10": 0.944
+    },
+    "keyword": {
+      "hit@1": 0.812,
+      "hit@3": 0.896,
+      "hit@5": 0.938,
+      "hit@10": 0.958,
+      "mrr@10": 0.862
+    }
+  },
+  "retrieval_by_category": {
+    "lexical": {
+      "n": 21,
+      "hybrid hit@5": 1.0,
+      "vector hit@5": 1.0,
+      "keyword hit@5": 1.0
+    },
+    "multi": {
+      "n": 1,
+      "hybrid hit@5": 1.0,
+      "vector hit@5": 1.0,
+      "keyword hit@5": 1.0
+    },
+    "numeric": {
+      "n": 1,
+      "hybrid hit@5": 1.0,
+      "vector hit@5": 1.0,
+      "keyword hit@5": 1.0
+    },
+    "paraphrase": {
+      "n": 25,
+      "hybrid hit@5": 1.0,
+      "vector hit@5": 0.96,
+      "keyword hit@5": 0.88
+    }
+  },
+  "answers": {
+    "fact_recall": 0.938,
+    "false_refusal_rate": 0.062,
+    "correct_refusal_rate": 0.875,
+    "citation_validity": 1.0,
+    "faithfulness": 0.902,
+    "faithfulness_judged": 46,
+    "faithfulness_unparseable": 0,
+    "latency_ms_p50": 12431.5,
+    "latency_ms_p95": 17376.4
+  },
+  "questions": [
+    {
+      "id": "pto-accrual",
+      "category": "paraphrase",
+      "question": "How much paid time off do full-time staff earn each month?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Full-time employees accrue 1.75 days of paid time off for every month of service [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 26434.4
+    },
+    {
+      "id": "pto-carryover",
+      "category": "paraphrase",
+      "question": "Can I keep unused vacation days for next year, and until when?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 2,
+        "vector": 6,
+        "keyword": 1
+      },
+      "answer": "You may carry over up to 8 unused PTO days into the next calendar year. Carried-over days expire on March 31 if they have not been used by then. [2]",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED\n2: SUPPORTED",
+      "latency_ms": 17175.1
+    },
+    {
+      "id": "pto-notice",
+      "category": "lexical",
+      "question": "How far in advance must I request more than five consecutive days off?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 3,
+        "keyword": 1
+      },
+      "answer": "Requests for more than five consecutive days must be submitted at least three weeks in advance [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 0.0,
+      "judge_raw": "1: UNSUPPORTED",
+      "latency_ms": 11776.8
+    },
+    {
+      "id": "sick-days",
+      "category": "lexical",
+      "question": "How many paid sick days do employees get per year?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Employees receive 12 paid sick days per calendar year [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 14922.8
+    },
+    {
+      "id": "doctor-note",
+      "category": "paraphrase",
+      "question": "When do I need to show a medical certificate for being ill?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 3,
+        "vector": 1,
+        "keyword": null
+      },
+      "answer": "You need to show a medical certificate to HR if you are sick for more than three consecutive working days [3].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 0.0,
+      "judge_raw": "1: UNSUPPORTED",
+      "latency_ms": 11408.8
+    },
+    {
+      "id": "parental-primary",
+      "category": "lexical",
+      "question": "How long is parental leave for the primary caregiver?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "The primary caregiver receives 18 weeks of fully paid parental leave [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 13608.3
+    },
+    {
+      "id": "parental-return",
+      "category": "paraphrase",
+      "question": "Is there a gentler schedule after returning from having a baby?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Yes, employees returning from parental leave may work a reduced 80 percent schedule at full pay for their first month back [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 12119.1
+    },
+    {
+      "id": "remote-days",
+      "category": "paraphrase",
+      "question": "How many days a week can I work from home?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Employees may work remotely up to three days per week [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 16375.9
+    },
+    {
+      "id": "home-office",
+      "category": "paraphrase",
+      "question": "Will the company pay for my desk and chair at home?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Yes, the company will pay for your desk and chair at home. According to [1], new remote workers receive a one-time home office stipend of 400 euros for a desk, chair or monitor.",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 0.5,
+      "judge_raw": "1: UNSUPPORTED\n2: SUPPORTED",
+      "latency_ms": 15398.8
+    },
+    {
+      "id": "abroad",
+      "category": "paraphrase",
+      "question": "Can I work from another country for a few weeks?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Working from another country for more than 20 working days per year requires approval from the People team [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 4879.7
+    },
+    {
+      "id": "expense-deadline",
+      "category": "lexical",
+      "question": "Within how many days must expense claims be submitted in Ledgerly?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Expense claims must be submitted within 30 days in Ledgerly [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 16692.1
+    },
+    {
+      "id": "meal-allowance",
+      "category": "paraphrase",
+      "question": "How much can I spend on food per day on a business trip?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 2,
+        "vector": 1,
+        "keyword": 8
+      },
+      "answer": "You can spend up to 45 euros per day on meals while travelling [2].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 12307.6
+    },
+    {
+      "id": "learning-budget",
+      "category": "paraphrase",
+      "question": "Is there money for training courses and conferences?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 2
+      },
+      "answer": "Yes, employees have an annual learning budget of 1,200 euros for courses and conferences [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 13473.8
+    },
+    {
+      "id": "password-length",
+      "category": "lexical",
+      "question": "What is the minimum password length?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "All passwords must be at least 14 characters long [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 13051.6
+    },
+    {
+      "id": "admin-mfa",
+      "category": "paraphrase",
+      "question": "What second factor do administrators have to use?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Administrators must use a hardware security key as their second factor [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 12084.7
+    },
+    {
+      "id": "lost-laptop",
+      "category": "paraphrase",
+      "question": "I left my work laptop on the train. How quickly do I have to tell someone?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 2,
+        "keyword": 2
+      },
+      "answer": "You must report the lost or stolen laptop to security@northwind.example within one hour [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 14374.3
+    },
+    {
+      "id": "screen-lock",
+      "category": "lexical",
+      "question": "After how many minutes of inactivity must screens lock?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Screens must lock automatically after five minutes of inactivity [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 11159.5
+    },
+    {
+      "id": "access-review",
+      "category": "paraphrase",
+      "question": "How often do managers check who still needs system permissions?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Managers review the system access of their team members every quarter [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 13192.9
+    },
+    {
+      "id": "critical-patch",
+      "category": "lexical",
+      "question": "How quickly must critical vulnerabilities be patched?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Critical vulnerabilities must be patched within 7 days of disclosure [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 12412.4
+    },
+    {
+      "id": "phishing",
+      "category": "lexical",
+      "question": "How often are simulated phishing exercises run?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Simulated phishing exercises are run every month [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9690.9
+    },
+    {
+      "id": "api-key-header",
+      "category": "lexical",
+      "question": "Which HTTP header carries the API key?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "The X-NW-Key header carries the API key [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 13226.9
+    },
+    {
+      "id": "key-rotation",
+      "category": "paraphrase",
+      "question": "After I rotate a key, how long does the old one keep working?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 3,
+        "keyword": 1
+      },
+      "answer": "The old key keeps working for 24 hours after a rotation [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 11477.0
+    },
+    {
+      "id": "growth-rate-limit",
+      "category": "lexical",
+      "question": "What is the rate limit on the Growth plan?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "The Growth plan allows 600 requests per minute [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 13331.8
+    },
+    {
+      "id": "too-many-requests",
+      "category": "paraphrase",
+      "question": "What should my client do when the API says I'm sending too many requests?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "When the API says you're sending too many requests, your client should wait for the specified amount of time in the Retry-After header before retrying the request [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 13167.9
+    },
+    {
+      "id": "nw-4012",
+      "category": "lexical",
+      "question": "What does error NW-4012 mean?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Error code NW-4012 means a webhook signature did not match the payload [3].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 13490.4
+    },
+    {
+      "id": "nw-2003",
+      "category": "lexical",
+      "question": "I'm getting NW-2003. What is wrong?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Error code NW-2003 means the monthly quota for your plan has been exhausted [1][2].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 8768.5
+    },
+    {
+      "id": "page-size",
+      "category": "lexical",
+      "question": "What is the maximum page size for list endpoints?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "The maximum page size for list endpoints is 200 items [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 11317.4
+    },
+    {
+      "id": "webhook-retries",
+      "category": "multi",
+      "question": "How many times are failed webhooks retried, and how is each delivery signed?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Failed webhooks are retried 8 times over 24 hours with exponential backoff [1]. Each delivery is signed with HMAC-SHA256 and the signature is sent in the X-NW-Signature header; verify it before trusting the payload [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED\n2: SUPPORTED",
+      "latency_ms": 18549.9
+    },
+    {
+      "id": "deprecation",
+      "category": "paraphrase",
+      "question": "How long is an old API version supported after it is deprecated?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "The old version of the API is supported for 12 months after the deprecation notice [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 14704.6
+    },
+    {
+      "id": "enterprise-uptime",
+      "category": "lexical",
+      "question": "What uptime does Northwind commit to for Enterprise customers?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Northwind commits to a monthly uptime of 99.95 percent for Enterprise customers [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 17376.4
+    },
+    {
+      "id": "credit-99",
+      "category": "numeric",
+      "question": "What service credit do I get if monthly availability was 97 percent?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": false,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 16221.6
+    },
+    {
+      "id": "credit-claim",
+      "category": "paraphrase",
+      "question": "Is there a deadline to ask for money back after an outage month?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 5
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": false,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 10345.5
+    },
+    {
+      "id": "p1-response",
+      "category": "lexical",
+      "question": "What is the first response time for P1 incidents on Enterprise?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Enterprise customers can raise P1 incidents 24 hours a day, 7 days a week, and receive a first response within 15 minutes [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 15082.4
+    },
+    {
+      "id": "maintenance",
+      "category": "paraphrase",
+      "question": "When does planned downtime for upgrades happen?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Planned maintenance takes place on Sundays between 02:00 and 04:00 UTC. [1]",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 14437.9
+    },
+    {
+      "id": "sev1-definition",
+      "category": "lexical",
+      "question": "What counts as a SEV1 incident?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 3,
+        "vector": 1,
+        "keyword": 5
+      },
+      "answer": "SEV1 is a full outage of a core product or any confirmed loss of customer data [3].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 13451.5
+    },
+    {
+      "id": "ack-time",
+      "category": "paraphrase",
+      "question": "How long does the on-call engineer have to respond to an urgent page?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "The primary on-call engineer must acknowledge the page within 5 minutes [1]. If not acknowledged within 10 minutes, PagerBell escalates automatically to the secondary on-call and then to the engineering manager [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED\n2: SUPPORTED",
+      "latency_ms": 15746.7
+    },
+    {
+      "id": "status-page",
+      "category": "lexical",
+      "question": "How often must the status page be updated during a SEV1?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "The status page must be updated within 15 minutes of the incident being declared, and then at least every 30 minutes until it is resolved [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 14705.7
+    },
+    {
+      "id": "postmortem",
+      "category": "paraphrase",
+      "question": "By when does the write-up after a major outage need to be published?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 3
+      },
+      "answer": "A written postmortem is required for every SEV1 and SEV2 incident and must be published within 5 business days [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 12431.5
+    },
+    {
+      "id": "growth-price",
+      "category": "paraphrase",
+      "question": "How much does the Growth plan cost?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "The Growth plan costs 12 US dollars per user per month, billed annually [2].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 14769.0
+    },
+    {
+      "id": "eu-region",
+      "category": "paraphrase",
+      "question": "Where is European customer data hosted?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "European customer data is hosted in Frankfurt [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9024.2
+    },
+    {
+      "id": "export-formats",
+      "category": "lexical",
+      "question": "In which formats can workspace data be exported?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Workspace data can be exported in CSV, JSON, and Parquet formats [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 10531.8
+    },
+    {
+      "id": "after-cancel",
+      "category": "paraphrase",
+      "question": "What happens to my data if I stop paying and close my account?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 5,
+        "vector": 1,
+        "keyword": null
+      },
+      "answer": "When you stop paying and close your account, your data is kept for 30 days so that you can reactivate or export it, after which it is permanently deleted [5].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 0.0,
+      "judge_raw": "1: UNSUPPORTED",
+      "latency_ms": 12813.2
+    },
+    {
+      "id": "sso",
+      "category": "lexical",
+      "question": "Which plan includes SAML single sign-on?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "The Enterprise plan includes SAML single sign-on [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 12466.6
+    },
+    {
+      "id": "backup-retention",
+      "category": "paraphrase",
+      "question": "For how long are database backups kept?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Database backups are kept for 35 days [4].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9035.6
+    },
+    {
+      "id": "audit-logs",
+      "category": "lexical",
+      "question": "How long are audit logs retained on the Enterprise plan?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "Audit logs are retained for 7 years on the Enterprise plan [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 12197.9
+    },
+    {
+      "id": "gdpr",
+      "category": "paraphrase",
+      "question": "How quickly do you handle a request to delete my personal data?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 2
+      },
+      "answer": "We fulfil data subject requests such as access or erasure within 30 days [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 9212.6
+    },
+    {
+      "id": "friday-deploys",
+      "category": "paraphrase",
+      "question": "Can I ship to production on Friday afternoon?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": false,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 10289.9
+    },
+    {
+      "id": "review-approvals",
+      "category": "lexical",
+      "question": "How many approvals does a pull request to main need?",
+      "answerable": true,
+      "ranks": {
+        "hybrid": 1,
+        "vector": 1,
+        "keyword": 1
+      },
+      "answer": "A pull request to the main branch needs approval from two reviewers, with at least one of them being a code owner of the changed files. [1]",
+      "refused": false,
+      "grounded": true,
+      "facts_found": true,
+      "faithfulness": 1.0,
+      "judge_raw": "1: SUPPORTED",
+      "latency_ms": 15877.6
+    },
+    {
+      "id": "u-ceo-salary",
+      "category": "unanswerable",
+      "question": "What is the CEO's annual salary?",
+      "answerable": false,
+      "ranks": {
+        "hybrid": null,
+        "vector": null,
+        "keyword": null
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": null,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 6532.5
+    },
+    {
+      "id": "u-dental",
+      "category": "unanswerable",
+      "question": "Does the company provide dental insurance?",
+      "answerable": false,
+      "ranks": {
+        "hybrid": null,
+        "vector": null,
+        "keyword": null
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": null,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 12162.9
+    },
+    {
+      "id": "u-student",
+      "category": "unanswerable",
+      "question": "Is there a student discount on the Growth plan?",
+      "answerable": false,
+      "ranks": {
+        "hybrid": null,
+        "vector": null,
+        "keyword": null
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": null,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 9678.0
+    },
+    {
+      "id": "u-capital",
+      "category": "unanswerable",
+      "question": "What is the capital of Australia?",
+      "answerable": false,
+      "ranks": {
+        "hybrid": null,
+        "vector": null,
+        "keyword": null
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": null,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 4.6
+    },
+    {
+      "id": "u-eu-cloud",
+      "category": "unanswerable",
+      "question": "Which cloud provider runs the Frankfurt data center?",
+      "answerable": false,
+      "ranks": {
+        "hybrid": null,
+        "vector": null,
+        "keyword": null
+      },
+      "answer": "The Frankfurt data center is run by [1].",
+      "refused": false,
+      "grounded": true,
+      "facts_found": null,
+      "faithfulness": 0.0,
+      "judge_raw": "1: UNSUPPORTED",
+      "latency_ms": 9280.6
+    },
+    {
+      "id": "u-contractor-sick",
+      "category": "unanswerable",
+      "question": "How many sick days do external contractors get?",
+      "answerable": false,
+      "ranks": {
+        "hybrid": null,
+        "vector": null,
+        "keyword": null
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": null,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 11721.6
+    },
+    {
+      "id": "u-graphql",
+      "category": "unanswerable",
+      "question": "Does the API offer a GraphQL endpoint?",
+      "answerable": false,
+      "ranks": {
+        "hybrid": null,
+        "vector": null,
+        "keyword": null
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": null,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 11021.0
+    },
+    {
+      "id": "u-office",
+      "category": "unanswerable",
+      "question": "What is the address of the Berlin office?",
+      "answerable": false,
+      "ranks": {
+        "hybrid": null,
+        "vector": null,
+        "keyword": null
+      },
+      "answer": "I don't know based on the provided documents.",
+      "refused": true,
+      "grounded": true,
+      "facts_found": null,
+      "faithfulness": null,
+      "judge_raw": null,
+      "latency_ms": 10116.0
+    }
+  ]
+}
