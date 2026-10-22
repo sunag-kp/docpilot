@@ -107,6 +107,26 @@ jobs:
           path: coverage.xml
           if-no-files-found: ignore
 
+  ui:
+    name: UI (lint, typecheck, test, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run build:demo
+
   docker:
     name: Docker build & compose smoke test
     runs-on: ubuntu-latest
