@@ -153,6 +153,8 @@ def build_llm(settings: Settings, embedder: Embedder | None = None) -> LLM:
             from docpilot.infra.llm.hosted import AnthropicLLM  # noqa: PLC0415
 
             assert settings.anthropic_api_key is not None
+            if not settings.llm_model:
+                raise ValueError("the Anthropic provider requires LLM_MODEL (a model id)")
             return AnthropicLLM(
                 settings.anthropic_api_key.get_secret_value(),
                 model,

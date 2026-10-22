@@ -135,7 +135,7 @@ def anthropic_stream(request: httpx2.Request, seen: dict[str, object]) -> httpx2
         "id": "msg_1",
         "type": "message",
         "role": "assistant",
-        "model": "anthropic-model",
+        "model": "anthropic-test-model",
         "content": [],
         "stop_reason": None,
         "stop_sequence": None,
@@ -184,13 +184,13 @@ def anthropic_stream(request: httpx2.Request, seen: dict[str, object]) -> httpx2
 async def test_anthropic_streams_text_with_effort_fallbacks_and_no_sampling_params() -> None:
     seen: dict[str, object] = {}
     client = httpx2.AsyncClient(transport=httpx2.MockTransport(lambda r: anthropic_stream(r, seen)))
-    llm = AnthropicLLM("sk-ant-test", http_client=client)
+    llm = AnthropicLLM("sk-ant-test", "anthropic-test-model", http_client=client)
     assert await collect(llm) == "Employees get 20 days [1]."
-    assert llm.name == "anthropic:anthropic-model"
+    assert llm.name == "anthropic:anthropic-test-model"
 
     body = seen["body"]
     assert isinstance(body, dict)
-    assert body["model"] == "anthropic-model"
+    assert body["model"] == "anthropic-test-model"
     assert body["output_config"] == {"effort": "low"}
     assert body["fallbacks"] == "default"
     assert body["max_tokens"] == 8000  # thinking tokens count toward max_tokens
@@ -208,7 +208,7 @@ async def test_anthropic_overload_maps_to_unavailable() -> None:
         )
 
     client = httpx2.AsyncClient(transport=httpx2.MockTransport(overloaded))
-    llm = AnthropicLLM("sk-ant-test", http_client=client)
+    llm = AnthropicLLM("sk-ant-test", "anthropic-test-model", http_client=client)
     llm._client = llm._client.with_options(max_retries=0)
     with pytest.raises(GenerationUnavailableError):
         await collect(llm)
@@ -222,7 +222,7 @@ async def test_anthropic_client_errors_are_not_masked_as_unavailable() -> None:
         )
 
     client = httpx2.AsyncClient(transport=httpx2.MockTransport(bad_request))
-    llm = AnthropicLLM("sk-ant-test", http_client=client)
+    llm = AnthropicLLM("sk-ant-test", "anthropic-test-model", http_client=client)
     with pytest.raises(anthropic.BadRequestError):
         await collect(llm)
 

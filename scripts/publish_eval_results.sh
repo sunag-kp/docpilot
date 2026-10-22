@@ -11,7 +11,7 @@ SHORT="${SHA:0:7}"
 STAGING="$(mktemp -d)"
 cp "$@" "$STAGING/"
 
-git config user.name "github-actions[bot]"
+git config user.name "DocPilot CI"
 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
 WORKTREE=""

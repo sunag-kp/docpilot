@@ -289,8 +289,8 @@ Settings live in one typed `pydantic-settings` class ([`config.py`](src/docpilot
 
 | Variable | Default | Notes |
 |---|---|---|
-| `LLM_PROVIDER` | `auto` | `auto` = Anthropic if `ANTHROPIC_API_KEY` is set, else OpenAI if `OPENAI_API_KEY` is set, else `extractive`. Also: `ollama`, `echo` (test mock) |
-| `LLM_MODEL` | provider default | e.g. `qwen2.5:3b` for Ollama |
+| `LLM_PROVIDER` | `auto` | `auto` = Anthropic if `ANTHROPIC_API_KEY` is set (with `LLM_MODEL`), else OpenAI if `OPENAI_API_KEY` is set, else `extractive`. Also: `ollama`, `echo` (test mock) |
+| `LLM_MODEL` | provider default | Required for Anthropic (a model ID from its docs); e.g. `qwen2.5:3b` for Ollama |
 | `EMBEDDING_PROVIDER` | `fastembed` | Local `all-MiniLM-L6-v2` (384-d). `hashing` needs no model; `openai` needs a key |
 | `RETRIEVAL_TOP_K` / `RETRIEVAL_CANDIDATES` | `5` / `30` | Passages cited / candidates per ranker before fusion |
 | `KEYWORD_RANKER` | `bm25` | `ts_rank` for the ablation |
@@ -323,7 +323,7 @@ make load-test   # Locust query + ingestion runs, results to benchmarks/results/
 cd ui && npm ci && npm run dev    # UI on :5173, proxied to the API on :8000
 ```
 
-The suite has 229 tests at 95% branch coverage, and CI fails below 80%. Integration tests run against real Postgres + pgvector, Redis, Redpanda and MinIO in CI service containers and use their own database. CI runs four jobs:
+The suite has 232 tests at 95% branch coverage, and CI fails below 80%. Integration tests run against real Postgres + pgvector, Redis, Redpanda and MinIO in CI service containers and use their own database. CI runs four jobs:
 
 1. lint and type checks;
 2. tests;

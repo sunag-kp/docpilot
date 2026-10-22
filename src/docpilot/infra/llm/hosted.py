@@ -65,8 +65,8 @@ class OpenAILLM:
 class AnthropicLLM:
     """Anthropic Messages API via the official SDK, streamed.
 
-    Opus 5.5 always uses adaptive thinking, and thinking tokens count against
-    ``max_tokens``, so the budget here is larger than the answer length; ``effort`` sets
+    Current models think adaptively, and thinking tokens count against ``max_tokens``,
+    so the budget here is larger than the answer length; ``effort`` sets
     how much the model thinks (``low`` suits extracting answers from given passages).
     Sampling parameters are not sent: the Messages API rejects ``temperature`` now.
     Server-side refusal fallbacks are on, so a safety-classifier decline is re-run on a
@@ -76,7 +76,7 @@ class AnthropicLLM:
     def __init__(
         self,
         api_key: str,
-        model: str = "anthropic-model",
+        model: str,
         *,
         effort: Effort = "low",
         max_tokens: int = 8000,

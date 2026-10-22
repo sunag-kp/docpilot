@@ -148,7 +148,7 @@ class Settings(BaseSettings):
     # Extractive answerer: minimum question/sentence cosine similarity to answer at all.
     extractive_min_similarity: float = Field(default=0.4, ge=-1.0, le=1.0)
     anthropic_api_key: SecretStr | None = None
-    # Opus 5.5 always thinks and thinking counts toward max_tokens, hence a larger budget.
+    # Thinking tokens count toward max_tokens, hence a budget well above the answer length.
     anthropic_effort: Literal["low", "medium", "high", "xhigh", "max"] = "low"
     anthropic_max_tokens: int = Field(default=8000, ge=256)
     ollama_base_url: str = "http://localhost:11434"
@@ -194,6 +194,8 @@ class Settings(BaseSettings):
             raise ValueError("LLM_PROVIDER=openai requires OPENAI_API_KEY")
         if self.llm_provider is LLMProvider.ANTHROPIC and self.anthropic_api_key is None:
             raise ValueError("LLM_PROVIDER=anthropic requires ANTHROPIC_API_KEY")
+        if self.resolved_llm_provider is LLMProvider.ANTHROPIC and not self.llm_model:
+            raise ValueError("the Anthropic provider requires LLM_MODEL (an Anthropic model id)")
         return self
 
     @property
@@ -221,7 +223,6 @@ class Settings(BaseSettings):
 _DEFAULT_MODELS = {
     LLMProvider.OLLAMA: "qwen2.5:1.5b",
     LLMProvider.OPENAI: "gpt-4o-mini",
-    LLMProvider.ANTHROPIC: "anthropic-model",
 }
 
 

@@ -24,7 +24,10 @@ def make(**kw: object) -> Settings:
         ({"llm_provider": LLMProvider.OLLAMA}, "ollama:qwen2.5:1.5b"),
         ({"llm_provider": LLMProvider.OLLAMA, "llm_model": "llama3.2:3b"}, "ollama:llama3.2:3b"),
         ({"openai_api_key": SecretStr("sk-x")}, "openai:gpt-4o-mini"),
-        ({"anthropic_api_key": SecretStr("sk-ant-x")}, "anthropic:anthropic-model"),
+        (
+            {"anthropic_api_key": SecretStr("sk-ant-x"), "llm_model": "test-model"},
+            "anthropic:test-model",
+        ),
     ],
 )
 def test_llm_selection(
@@ -33,6 +36,19 @@ def test_llm_selection(
     for var in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "LLM_PROVIDER", "LLM_MODEL"):
         monkeypatch.delenv(var, raising=False)
     assert build_llm(make(**overrides)).name == name
+
+
+def test_anthropic_needs_an_explicit_model(monkeypatch: pytest.MonkeyPatch) -> None:
+    for var in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "LLM_PROVIDER", "LLM_MODEL"):
+        monkeypatch.delenv(var, raising=False)
+    with pytest.raises(ValueError, match="requires LLM_MODEL"):
+        make(anthropic_api_key=SecretStr("sk-ant-x"))
+    # Settings copied without validation (as the eval harness does) fail when building.
+    unvalidated = make().model_copy(
+        update={"llm_provider": LLMProvider.ANTHROPIC, "anthropic_api_key": SecretStr("k")}
+    )
+    with pytest.raises(ValueError, match="requires LLM_MODEL"):
+        build_llm(unvalidated)
 
 
 def test_embedder_selection(monkeypatch: pytest.MonkeyPatch) -> None:
