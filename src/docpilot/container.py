@@ -35,6 +35,7 @@ from docpilot.infra.redis.ratelimit import RedisTokenBucketRateLimiter
 from docpilot.infra.security import JwtTokenCodec, ScryptPasswordHasher, SystemClock
 from docpilot.infra.storage.local import InMemoryObjectStorage, LocalObjectStorage
 from docpilot.observability.logging import get_logger
+from docpilot.observability.tracing import instrument_clients
 from docpilot.services.answering import QuestionAnswering
 from docpilot.services.auth import AuthService
 from docpilot.services.documents import DocumentService
@@ -79,6 +80,18 @@ class Container:
 
 
 def build_embedder(settings: Settings) -> Embedder:
+    embedder = _build_raw_embedder(settings)
+    if (
+        settings.embedding_cache_size
+        and settings.embedding_provider is not EmbeddingProvider.HASHING
+    ):
+        from docpilot.infra.embeddings.cache import CachingEmbedder  # noqa: PLC0415
+
+        return CachingEmbedder(embedder, max_entries=settings.embedding_cache_size)
+    return embedder
+
+
+def _build_raw_embedder(settings: Settings) -> Embedder:
     match settings.embedding_provider:
         case EmbeddingProvider.HASHING:
             return HashingEmbedder(settings.embedding_dim)
@@ -163,6 +176,7 @@ async def build_container(settings: Settings) -> Container:
 
     engine = create_engine(settings)
     container.closers.append(engine.dispose)
+    instrument_clients(settings)
 
     def uow_factory() -> UnitOfWork:
         return SqlUnitOfWork(engine, settings.embedding_dim)

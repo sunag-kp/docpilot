@@ -47,6 +47,25 @@ def configure_tracing(settings: Settings, *, service_suffix: str) -> None:
     _configured = True
 
 
+def instrument_clients(settings: Settings) -> None:
+    """Client spans for SQL, Redis and outbound HTTP (e.g. Ollama) calls.
+
+    asyncpg is instrumented directly rather than through SQLAlchemy: SQLAlchemy's async
+    engine fires its cursor events inside a greenlet that does not carry the caller's
+    context, so those spans would be orphaned from the request trace.
+    """
+    if not settings.otel_enabled:
+        return
+    from opentelemetry.instrumentation.asyncpg import AsyncPGInstrumentor  # noqa: PLC0415
+    from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor  # noqa: PLC0415
+    from opentelemetry.instrumentation.redis import RedisInstrumentor  # noqa: PLC0415
+
+    asyncpg = AsyncPGInstrumentor()  # type: ignore[no-untyped-call]  # untyped upstream
+    for instrumentor in (asyncpg, RedisInstrumentor(), HTTPXClientInstrumentor()):
+        if not instrumentor.is_instrumented_by_opentelemetry:
+            instrumentor.instrument()
+
+
 @contextmanager
 def timed_span(name: str, histogram: Histogram, label: str, **attributes: object) -> Iterator[None]:
     """Open a span *and* observe the stage duration in a Prometheus histogram."""
