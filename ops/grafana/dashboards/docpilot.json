@@ -147,7 +147,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(docpilot_http_requests_total{status=~\"5..\"}[5m])) / clamp_min(sum(rate(docpilot_http_requests_total[5m])), 1e-9)",
+          "expr": "(sum(rate(docpilot_http_requests_total{status=~\"5..\"}[5m])) or vector(0)) / clamp_min(sum(rate(docpilot_http_requests_total[5m])), 1e-9)",
           "legendFormat": "",
           "refId": "A"
         }
@@ -201,7 +201,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(docpilot_cache_lookups_total{result=\"hit\"}[5m])) / clamp_min(sum(rate(docpilot_cache_lookups_total[5m])), 1e-9)",
+          "expr": "(sum(rate(docpilot_cache_lookups_total{result=\"hit\"}[5m])) or vector(0)) / clamp_min(sum(rate(docpilot_cache_lookups_total[5m])), 1e-9)",
           "legendFormat": "",
           "refId": "A"
         }
@@ -486,7 +486,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(docpilot_rate_limited_total[1m])",
+          "expr": "sum(rate(docpilot_rate_limited_total[1m]))",
           "legendFormat": "429 rate-limited",
           "refId": "B"
         }
