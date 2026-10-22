@@ -1,0 +1,22 @@
+{
+  // Runs the complete stack (API, workers, Postgres, Redis, Redpanda, MinIO, Prometheus,
+  // Grafana, Jaeger) in a GitHub Codespace, free within the monthly Codespaces allowance.
+  // The UI opens on port 8000 once `make up` reports every service healthy.
+  "name": "DocPilot",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb"
+  },
+  "postStartCommand": "make up",
+  "forwardPorts": [8000, 3000, 16686],
+  "portsAttributes": {
+    "8000": {"label": "DocPilot (UI + API)", "onAutoForward": "openBrowser"},
+    "3000": {"label": "Grafana", "onAutoForward": "silent"},
+    "16686": {"label": "Jaeger", "onAutoForward": "silent"}
+  },
+  "otherPortsAttributes": {"onAutoForward": "ignore"}
+}

@@ -10,9 +10,9 @@
 
 It runs entirely on free, local components: no accounts, no API keys, no paid services. Embeddings come from a local ONNX model, and the default answerer is built in. Ollama, OpenAI and Anthropic are optional.
 
-**Live app: [sunagkp-docpilot.hf.space](https://sunagkp-docpilot.hf.space)** · **Browser-only demo: [sunag-kp.github.io/docpilot](https://sunag-kp.github.io/docpilot/)** · **API reference: [sunag-kp.github.io/docpilot/api](https://sunag-kp.github.io/docpilot/api/)** · run the full stack with `make up`
+**Run the full app: [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/sunag-kp/docpilot?quickstart=1)** · **Browser-only demo: [sunag-kp.github.io/docpilot](https://sunag-kp.github.io/docpilot/)** · **API reference: [sunag-kp.github.io/docpilot/api](https://sunag-kp.github.io/docpilot/api/)**
 
-> The live app is the real backend and UI on a free Hugging Face Space, in a single container (see [Free hosting](#free-hosting)): sign up with any email, upload documents, ask questions. Data resets when the Space restarts. The GitHub Pages demo needs no server at all: it runs a simplified backend *inside your browser* over eight preloaded sample documents. The complete system, with Kafka, MinIO, Grafana and Jaeger, runs with `make up`.
+> **Codespaces** starts the complete system (API, workers, Kafka, Postgres, Redis, MinIO, Grafana, Jaeger) in your browser, free within GitHub's monthly Codespaces allowance, and opens the UI when it's ready (see [Free hosting](#free-hosting)). The **GitHub Pages demo** needs no server at all: it runs a simplified backend inside your browser over eight preloaded sample documents. Locally, the same stack runs with `make up`.
 
 ![DocPilot answering a question with streamed, cited answers](docs/images/demo.gif)
 
@@ -285,20 +285,16 @@ Answers flow one way, SSE passes through proxies and `curl`, and the browser rec
 
 ## Free hosting
 
-The full app runs on a free Hugging Face Space (Docker, CPU basic: 2 vCPUs, 16 GB RAM) from [`deploy/huggingface/`](deploy/huggingface/). That one container runs:
-
-- Postgres + pgvector and Redis;
-- the API, with the ingestion worker in-process;
-- the UI.
-
-Two pieces of the full stack are swapped for built-in equivalents the app already supports: Kafka for the in-process event bus, and MinIO for local file storage. The [deploy workflow](.github/workflows/deploy-space.yml) builds that image on every pull request that touches it, boots it the way the Space does, and runs the end-to-end smoke test. On `main` it then uploads the source to the Space, which builds and serves it.
-
-To deploy your own copy:
-
-1. Create a Hugging Face **Write** token.
-2. Add it as the `HF_TOKEN` repository secret.
-3. Optionally, set the `HF_SPACE` repository variable to `<user>/docpilot`.
-4. Push to `main`.
+- **Full app, on demand: GitHub Codespaces.**
+  - Click **Open in GitHub Codespaces** above, or go to **Code → Codespaces → Create codespace on main**.
+  - The [dev container](.devcontainer/devcontainer.json) runs `make up` on a 4-core machine and opens the UI on port 8000 once every service is healthy. The first start takes about 10 minutes, mostly building the image.
+  - It's free within GitHub's monthly allowance (120 core-hours, about 30 hours on 4 cores). It stops after 30 idle minutes and resumes where it left off.
+  - To share it, set port 8000's visibility to **Public** in the Ports tab.
+- **Always on, no server: GitHub Pages.** The [Pages workflow](.github/workflows/pages.yml) publishes the browser demo and the API reference on every push to `main`.
+- **Single container: Hugging Face Space (needs a PRO plan).**
+  - [`deploy/huggingface/`](deploy/huggingface/) packages Postgres + pgvector, Redis, the API with its in-process ingestion worker, and the UI into one container. It uses the in-process event bus in place of Kafka and local storage in place of MinIO.
+  - The [deploy workflow](.github/workflows/deploy-space.yml) builds and smoke-tests that image on every change.
+  - Since mid-2026, Hugging Face requires a PRO subscription for Docker Spaces, so the upload runs only when the `HF_SPACE` repository variable and the `HF_TOKEN` secret are set.
 
 ## Configuration
 
