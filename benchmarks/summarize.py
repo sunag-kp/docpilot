@@ -61,6 +61,15 @@ def table(stats: list[dict[str, str]]) -> list[str]:
     return lines
 
 
+def http_throughput(stats: list[dict[str, str]]) -> str:
+    # The SSE rows are timing events recorded on the same streams, not extra requests.
+    total = sum(float(row["Requests/s"]) for row in stats if row["Type"] != "SSE")
+    return (
+        f"Throughput: **{total:.1f} HTTP requests/s** in total (the `stream:*` rows time the "
+        "same streams as `query:stream` and are not counted again)."
+    )
+
+
 def stages(path: Path, title: str) -> list[str]:
     if not path.exists():
         return []
@@ -94,16 +103,20 @@ def main() -> None:
     parser.add_argument("--config", default=DEFAULT_CONFIG)
     args = parser.parse_args()
     run = Path(args.run)
-    environment = {
-        "commit": git_commit(),
-        "cpu": cpu_model(),
-        "logical_cpus": os.cpu_count(),
-        "memory_gb": memory_gb(),
-        "os": platform.platform(),
-        "note": "API, 2 workers, Postgres, Redis, Redpanda, MinIO, Prometheus, Grafana, Jaeger "
-        "and Locust all share this one machine.",
-    }
-    (run / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
+    environment_path = run / "environment.json"
+    if environment_path.exists():  # re-rendering an old run keeps the machine it ran on
+        environment = json.loads(environment_path.read_text())
+    else:
+        environment = {
+            "commit": git_commit(),
+            "cpu": cpu_model(),
+            "logical_cpus": os.cpu_count(),
+            "memory_gb": memory_gb(),
+            "os": platform.platform(),
+            "note": "API, 2 workers, Postgres, Redis, Redpanda, MinIO, Prometheus, Grafana, "
+            "Jaeger and Locust all share this one machine.",
+        }
+        environment_path.write_text(json.dumps(environment, indent=2) + "\n")
     lines = [
         f"# Load test — {run.name}",
         "",
@@ -123,6 +136,8 @@ def main() -> None:
             "the final event.",
             "",
             *table(query),
+            "",
+            http_throughput(query),
             "",
             *stages(run / "query_stages.json", "Where the time goes"),
         ]

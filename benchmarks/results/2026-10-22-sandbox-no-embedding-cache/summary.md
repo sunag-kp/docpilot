@@ -16,6 +16,8 @@ Configuration: identical to 2026-10-22-sandbox except EMBEDDING_CACHE_SIZE=0 (no
 | stream:complete | 254 | 0 | 2.1 | 3400 | 3900 | 4100 |
 | stream:first-token | 254 | 0 | 2.1 | 3400 | 3900 | 4000 |
 
+Throughput: **10.5 HTTP requests/s** in total (the `stream:*` rows time the same streams as `query:stream` and are not counted again).
+
 Where the time goes (from the services' Prometheus histograms, 2m window; includes time waiting for the CPU / event loop):
 
 | Stage | p50 (ms) | p95 (ms) |

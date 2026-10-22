@@ -16,6 +16,8 @@ Configuration: local MiniLM embeddings (ONNX, CPU) with a 10k-entry embedding LR
 | stream:complete | 777 | 0 | 6.5 | 950 | 1400 | 1800 |
 | stream:first-token | 777 | 0 | 6.5 | 610 | 980 | 1200 |
 
+Throughput: **32.2 HTTP requests/s** in total (the `stream:*` rows time the same streams as `query:stream` and are not counted again).
+
 Where the time goes (from the services' Prometheus histograms, 2m window; includes time waiting for the CPU / event loop):
 
 | Stage | p50 (ms) | p95 (ms) |
