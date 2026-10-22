@@ -1,10 +1,12 @@
 """Built-in keyless answerer: extractive, grounded by construction.
 
-It never calls a model. It picks the source sentences that best overlap the question
-(IDF-weighted content terms, plus a prior from the passage's retrieval similarity) and
-cites each one. Because every sentence is copied from a source and labelled with it, the
-answer cannot hallucinate — but it also cannot paraphrase or reason across sources, so
-real generation should use Ollama (local) or a hosted provider.
+It never generates text. It embeds the question and every sentence of the retrieved
+passages with the local embedding model, picks the sentences closest in meaning (with a
+small bonus for sharing rare words), and cites each one. Every sentence is copied from a
+source and labelled with it, so the answer cannot hallucinate — but it cannot paraphrase
+or combine facts either; for that, use Ollama (local) or a hosted provider.
+
+If even the best sentence is not similar enough to the question, it refuses.
 """
 
 from __future__ import annotations
@@ -17,6 +19,9 @@ from dataclasses import dataclass
 
 from docpilot.domain.answers import REFUSAL, Citation, GenerationRequest
 from docpilot.domain.text import content_terms, split_sentences
+from docpilot.services.ports import Embedder
+
+_LEXICAL_WEIGHT = 0.15  # tie-breaker for exact identifiers ("NW-4012") embeddings blur
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,80 +30,69 @@ class _Candidate:
     rank: int
     position: int
     sentence: str
+    similarity: float
     overlap: float
 
     @property
     def score(self) -> float:
-        similarity = self.source.vector_similarity or 0.0
-        return self.overlap + 0.3 * similarity + 0.1 / (self.rank + 1)
+        return self.similarity + _LEXICAL_WEIGHT * self.overlap
 
 
 class ExtractiveLLM:
     def __init__(
         self,
+        embedder: Embedder | None = None,
         *,
+        min_similarity: float = 0.4,
         max_sentences: int = 3,
         max_per_source: int = 2,
-        semantic_fallback_similarity: float = 0.45,
+        margin: float = 0.12,
     ) -> None:
+        self._embedder = embedder
+        self._min_similarity = min_similarity
         self._max_sentences = max_sentences
         self._max_per_source = max_per_source
-        self._semantic_fallback = semantic_fallback_similarity
+        self._margin = margin
 
     @property
     def name(self) -> str:
         return "extractive"
 
     async def stream(self, request: GenerationRequest) -> AsyncIterator[str]:
-        answer = self.compose(request)
+        answer = await self.compose(request)
         words = answer.split(" ")
         for i, word in enumerate(words):
             yield word if i == len(words) - 1 else f"{word} "
             await asyncio.sleep(0)  # cooperative: lets a disconnected client cancel us
 
-    def compose(self, request: GenerationRequest) -> str:
-        question_terms = set(content_terms(request.question))
-        candidates: list[tuple[Citation, int, int, str, set[str]]] = []
-        for rank, source in enumerate(request.sources):
-            for position, sentence in enumerate(split_sentences(source.text)):
-                candidates.append((source, rank, position, sentence, set(content_terms(sentence))))
-        if not candidates:
-            return REFUSAL
-
-        document_frequency: Counter[str] = Counter()
-        for *_, terms in candidates:
-            document_frequency.update(terms)
-        total = len(candidates)
-
-        def idf(term: str) -> float:
-            return math.log(1 + total / (1 + document_frequency[term]))
-
-        query_weight = sum(idf(t) for t in question_terms) or 1.0
-        scored = [
-            _Candidate(
-                source=source,
-                rank=rank,
-                position=position,
-                sentence=sentence,
-                overlap=sum(idf(t) for t in question_terms & terms) / query_weight,
-            )
-            for source, rank, position, sentence, terms in candidates
+    async def compose(self, request: GenerationRequest) -> str:
+        rows = [
+            (source, rank, position, sentence)
+            for rank, source in enumerate(request.sources)
+            for position, sentence in enumerate(split_sentences(source.text))
         ]
-        with_overlap = sorted((c for c in scored if c.overlap > 0), key=lambda c: -c.score)
-        if with_overlap:
-            best = with_overlap[0].score
-            pool = [c for c in with_overlap if c.score >= 0.6 * best]
-        else:
-            # No shared words: only answer when retrieval is confident the top passage is a
-            # paraphrase of the question (e.g. "time off" vs "vacation"); otherwise refuse.
-            top = request.sources[0]
-            if (top.vector_similarity or 0.0) < self._semantic_fallback:
-                return REFUSAL
-            pool = [c for c in scored if c.source.number == top.number][:2]
+        if not rows:
+            return REFUSAL
+        overlaps = _idf_overlap(request.question, [r[3] for r in rows])
+        similarities = await self._similarities(request.question, [r[3] for r in rows], overlaps)
+        candidates = sorted(
+            (
+                _Candidate(source, rank, position, sentence, similarity, overlap)
+                for (source, rank, position, sentence), similarity, overlap in zip(
+                    rows, similarities, overlaps, strict=True
+                )
+            ),
+            key=lambda c: -c.score,
+        )
+        best = candidates[0]
+        if best.similarity < self._min_similarity:
+            return REFUSAL
 
         chosen: list[_Candidate] = []
         per_source: Counter[int] = Counter()
-        for candidate in pool:
+        for candidate in candidates:
+            if candidate.score < best.score - self._margin:
+                break
             if per_source[candidate.source.number] >= self._max_per_source:
                 continue
             chosen.append(candidate)
@@ -106,8 +100,29 @@ class ExtractiveLLM:
             if len(chosen) == self._max_sentences:
                 break
         chosen.sort(key=lambda c: (c.rank, c.position))  # read in document order
-        return " ".join(f"{_strip_end(c.sentence)} [{c.source.number}]." for c in chosen)
+        return " ".join(f"{c.sentence.rstrip().rstrip('.')} [{c.source.number}]." for c in chosen)
+
+    async def _similarities(
+        self, question: str, sentences: list[str], overlaps: list[float]
+    ) -> list[float]:
+        if self._embedder is None:  # lexical-only mode (no embedder wired, e.g. unit tests)
+            return overlaps
+        vectors = await self._embedder.embed_documents([question, *sentences])
+        query = vectors[0]
+        return [sum(a * b for a, b in zip(query, v, strict=True)) for v in vectors[1:]]
 
 
-def _strip_end(sentence: str) -> str:
-    return sentence.rstrip().rstrip(".")
+def _idf_overlap(question: str, sentences: list[str]) -> list[float]:
+    """Share of the question's information (IDF mass) each sentence contains, in [0, 1]."""
+    question_terms = set(content_terms(question))
+    sentence_terms = [set(content_terms(s)) for s in sentences]
+    document_frequency: Counter[str] = Counter()
+    for terms in sentence_terms:
+        document_frequency.update(terms)
+    total = len(sentences)
+
+    def idf(term: str) -> float:
+        return math.log(1 + total / (1 + document_frequency[term]))
+
+    mass = sum(idf(t) for t in question_terms) or 1.0
+    return [sum(idf(t) for t in question_terms & terms) / mass for terms in sentence_terms]
