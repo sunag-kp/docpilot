@@ -27,11 +27,14 @@ def test_rrf_scores_follow_the_formula_and_merge_evidence() -> None:
     assert {f.chunk_id for f in fused} == {a, b, c}
 
 
-def test_rrf_ties_are_deterministic() -> None:
+def test_rrf_ties_are_broken_by_evidence_not_by_random_ids() -> None:
     a, b = uuid4(), uuid4()
-    one = reciprocal_rank_fusion([[chunk(a)], [chunk(b)]])
-    two = reciprocal_rank_fusion([[chunk(b)], [chunk(a)]])
-    assert [c.chunk_id for c in one] == [c.chunk_id for c in two]
+    vector = [chunk(a, vector_similarity=0.9), chunk(b, vector_similarity=0.5)]
+    keyword = [chunk(b, keyword_rank=0.8), chunk(a, keyword_rank=0.4)]
+    one = reciprocal_rank_fusion([vector, keyword])
+    two = reciprocal_rank_fusion([keyword, vector])
+    assert one[0].fused_score == one[1].fused_score  # a genuine tie
+    assert [c.chunk_id for c in one] == [c.chunk_id for c in two] == [a, b]
 
 
 def test_rrf_handles_empty_input() -> None:
