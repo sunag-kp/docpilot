@@ -1,0 +1,63 @@
+name: Deploy (Hugging Face Space)
+
+# Builds the single-container image (deploy/huggingface), boots it the way the Space runs it
+# and runs the end-to-end smoke test. On main it then uploads the source to the free
+# Hugging Face Space, which builds and serves the full app.
+# Needs the HF_TOKEN repository secret (a Hugging Face "Write" token); without it the
+# upload is skipped. The HF_SPACE repository variable overrides the target Space.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "deploy/**"
+      - "src/**"
+      - "ui/**"
+      - "migrations/**"
+      - "pyproject.toml"
+      - "uv.lock"
+      - ".github/workflows/deploy-space.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-space-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.11.32"
+  HF_SPACE: ${{ vars.HF_SPACE || 'Sunagkp/docpilot' }}
+
+jobs:
+  deploy:
+    name: Build, smoke-test and deploy the Space
+    runs-on: ubuntu-latest
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: Assemble the Space
+        run: deploy/huggingface/assemble.sh "$RUNNER_TEMP/space"
+      - name: Build the image
+        run: docker build -t docpilot-space "$RUNNER_TEMP/space"
+      - name: Boot it as the Space does and run the smoke test
+        run: |
+          docker run -d --name space --user 1000 -p 7860:7860 docpilot-space
+          for i in $(seq 1 90); do curl -fsS localhost:7860/readyz && break; sleep 2; done
+          uv run --no-project --with httpx python scripts/smoke_test.py --base-url http://localhost:7860
+      - name: Container logs
+        if: failure()
+        run: docker logs space
+      - name: Upload to the Space
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && env.HF_TOKEN != ''
+        run: |
+          uv run --no-project --with huggingface_hub==1.33.0 \
+            python deploy/huggingface/upload.py "$RUNNER_TEMP/space"
+      - name: Report a missing token
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && env.HF_TOKEN == ''
+        run: echo "::warning::The HF_TOKEN secret is not set, so the Space was not updated."

@@ -10,9 +10,9 @@
 
 It runs entirely on free, local components: no accounts, no API keys, no paid services. Embeddings come from a local ONNX model, and the default answerer is built in. Ollama, OpenAI and Anthropic are optional.
 
-**Live demo: [sunag-kp.github.io/docpilot](https://sunag-kp.github.io/docpilot/)** · **API reference: [sunag-kp.github.io/docpilot/api](https://sunag-kp.github.io/docpilot/api/)** · run the real stack with `make up`
+**Live app: [sunagkp-docpilot.hf.space](https://sunagkp-docpilot.hf.space)** · **Browser-only demo: [sunag-kp.github.io/docpilot](https://sunag-kp.github.io/docpilot/)** · **API reference: [sunag-kp.github.io/docpilot/api](https://sunag-kp.github.io/docpilot/api/)** · run the full stack with `make up`
 
-> The GitHub Pages demo runs a simplified backend *inside your browser*: BM25 search and a lexical version of the extractive answerer over eight preloaded sample documents. It shows the product with no server to host. The real system below (Kafka, Postgres/pgvector, hybrid retrieval) runs with `make up`.
+> The live app is the real backend and UI on a free Hugging Face Space, in a single container (see [Free hosting](#free-hosting)): sign up with any email, upload documents, ask questions. Data resets when the Space restarts. The GitHub Pages demo needs no server at all: it runs a simplified backend *inside your browser* over eight preloaded sample documents. The complete system, with Kafka, MinIO, Grafana and Jaeger, runs with `make up`.
 
 ![DocPilot answering a question with streamed, cited answers](docs/images/demo.gif)
 
@@ -282,6 +282,23 @@ Answers flow one way, SSE passes through proxies and `curl`, and the browser rec
 - CI runs the same services as GitHub Actions service containers.
 - The MiniLM ONNX model is baked into the image, so nothing downloads at runtime.
 - The public demo is static files on GitHub Pages.
+
+## Free hosting
+
+The full app runs on a free Hugging Face Space (Docker, CPU basic: 2 vCPUs, 16 GB RAM) from [`deploy/huggingface/`](deploy/huggingface/). That one container runs:
+
+- Postgres + pgvector and Redis;
+- the API, with the ingestion worker in-process;
+- the UI.
+
+Two pieces of the full stack are swapped for built-in equivalents the app already supports: Kafka for the in-process event bus, and MinIO for local file storage. The [deploy workflow](.github/workflows/deploy-space.yml) builds that image on every pull request that touches it, boots it the way the Space does, and runs the end-to-end smoke test. On `main` it then uploads the source to the Space, which builds and serves it.
+
+To deploy your own copy:
+
+1. Create a Hugging Face **Write** token.
+2. Add it as the `HF_TOKEN` repository secret.
+3. Optionally, set the `HF_SPACE` repository variable to `<user>/docpilot`.
+4. Push to `main`.
 
 ## Configuration
 
