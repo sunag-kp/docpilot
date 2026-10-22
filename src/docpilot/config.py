@@ -125,6 +125,7 @@ class Settings(BaseSettings):
     embedding_dim: int = Field(default=384, ge=8, le=4096)
     embedding_batch_size: int = Field(default=32, ge=1)
     embedding_threads: int | None = Field(default=None, ge=1)
+    embedding_cache_size: int = Field(default=10_000, ge=0)  # 0 disables the LRU cache
     openai_api_key: SecretStr | None = None
     openai_base_url: str | None = None
     openai_embedding_model: str = "text-embedding-3-small"
