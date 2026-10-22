@@ -13,6 +13,7 @@ from docpilot.domain.errors import (
     ConflictError,
     DocumentTooLargeError,
     DomainError,
+    GenerationUnavailableError,
     InvalidInputError,
     NotFoundError,
     PermissionDeniedError,
@@ -32,6 +33,7 @@ _STATUS: dict[type[DomainError], int] = {
     DocumentTooLargeError: status.HTTP_413_CONTENT_TOO_LARGE,
     InvalidInputError: status.HTTP_422_UNPROCESSABLE_CONTENT,
     RateLimitedError: status.HTTP_429_TOO_MANY_REQUESTS,
+    GenerationUnavailableError: status.HTTP_503_SERVICE_UNAVAILABLE,
 }
 
 

@@ -7,7 +7,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from docpilot.domain.answers import Citation
 from docpilot.domain.models import ApiKey, Chunk, Document, DocumentKind, DocumentStatus
+from docpilot.domain.retrieval import SearchMode
 
 _EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
@@ -124,3 +126,56 @@ class ChunkResponse(BaseModel):
             page_end=c.page_end,
             token_count=c.token_count,
         )
+
+
+class QueryRequestBody(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    question: str = Field(min_length=1, max_length=2000, examples=["How many vacation days?"])
+    top_k: int | None = Field(default=None, ge=1, le=20, description="Passages to cite")
+    mode: SearchMode = Field(default=SearchMode.HYBRID, description="Retrieval strategy")
+    document_ids: list[UUID] = Field(default_factory=list, max_length=50)
+    rerank: bool = Field(default=True, description="Use the cross-encoder when configured")
+
+
+class CitationResponse(BaseModel):
+    number: int
+    chunk_id: UUID
+    document_id: UUID
+    filename: str
+    section: str | None
+    page_start: int | None
+    page_end: int | None
+    text: str
+    score: float
+    vector_similarity: float | None
+
+    @classmethod
+    def from_domain(cls, c: Citation) -> CitationResponse:
+        return cls(
+            number=c.number,
+            chunk_id=c.chunk_id,
+            document_id=c.document_id,
+            filename=c.filename,
+            section=c.section,
+            page_start=c.page_start,
+            page_end=c.page_end,
+            text=c.text,
+            score=round(c.score, 6),
+            vector_similarity=(
+                round(c.vector_similarity, 4) if c.vector_similarity is not None else None
+            ),
+        )
+
+
+class QueryResponse(BaseModel):
+    query_id: UUID
+    answer: str
+    citations: list[CitationResponse] = Field(description="Sources shown to the model, numbered")
+    cited_numbers: list[int] = Field(description="Source numbers the answer actually cites")
+    refused: bool
+    grounded: bool
+    cached: bool
+    model: str
+    latency_ms: float
+    timings_ms: dict[str, float]
