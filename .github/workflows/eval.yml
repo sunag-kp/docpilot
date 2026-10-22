@@ -1,0 +1,104 @@
+name: Evaluation
+
+# Retrieval + answer quality on the labeled set in eval/qa.jsonl. Zero cost: local
+# embeddings, and a local open-weights LLM served by Ollama for generation and judging.
+on:
+  push:
+    paths:
+      - "eval/**"
+      - "src/docpilot/domain/**"
+      - "src/docpilot/evaluation/**"
+      - "src/docpilot/services/retrieval.py"
+      - "src/docpilot/services/answering.py"
+      - "src/docpilot/infra/db/search.py"
+      - "src/docpilot/infra/llm/**"
+      - ".github/workflows/eval.yml"
+  workflow_dispatch:
+    inputs:
+      generator_model:
+        description: Ollama model that writes the answers
+        default: qwen2.5:3b
+      judge_model:
+        description: Ollama model that grades faithfulness (use a different family)
+        default: llama3.1:8b
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eval-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.11.32"
+  DATABASE_URL: postgresql+asyncpg://docpilot:docpilot@localhost:5432/docpilot
+  EMBEDDING_CACHE_DIR: ${{ github.workspace }}/.models
+
+jobs:
+  offline:
+    name: Offline eval (local embeddings, extractive answerer)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg17-trixie
+        env: {POSTGRES_USER: docpilot, POSTGRES_PASSWORD: docpilot, POSTGRES_DB: docpilot}
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U docpilot" --health-interval 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {version: "${{ env.UV_VERSION }}", enable-cache: true}
+      - run: uv sync --frozen --python 3.12
+      - uses: actions/cache@v4
+        with:
+          path: .models
+          key: models-${{ hashFiles('src/docpilot/infra/embeddings/model_download.py') }}
+      - name: Evaluate (BM25 + MiniLM, hybrid / vector / keyword ablation)
+        run: uv run python eval/run_eval.py --label ci-offline
+      - run: cat eval/results/ci-offline.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with: {name: eval-offline, path: eval/results/ci-offline.*}
+
+  llm:
+    name: LLM eval (Ollama generator + LLM-as-judge)
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg17-trixie
+        env: {POSTGRES_USER: docpilot, POSTGRES_PASSWORD: docpilot, POSTGRES_DB: docpilot}
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U docpilot" --health-interval 3s --health-retries 20
+      ollama:
+        image: ollama/ollama:0.40.8
+        ports: ["11434:11434"]
+    env:
+      GENERATOR: ${{ inputs.generator_model || 'qwen2.5:3b' }}
+      JUDGE: ${{ inputs.judge_model || 'llama3.1:8b' }}
+      OLLAMA_BASE_URL: http://localhost:11434
+      LLM_TIMEOUT_SECONDS: "900"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: {version: "${{ env.UV_VERSION }}", enable-cache: true}
+      - run: uv sync --frozen --python 3.12
+      - uses: actions/cache@v4
+        with:
+          path: .models
+          key: models-${{ hashFiles('src/docpilot/infra/embeddings/model_download.py') }}
+      - name: Pull open-weights models
+        run: |
+          for model in "$GENERATOR" "$JUDGE"; do
+            curl -fsS http://localhost:11434/api/pull -d "{\"model\": \"$model\", \"stream\": false}"
+            echo
+          done
+      - name: Evaluate (answers by the generator, faithfulness graded by the judge)
+        run: |
+          uv run python eval/run_eval.py --llm ollama --llm-model "$GENERATOR" \
+            --judge ollama --judge-model "$JUDGE" --label ci-ollama
+      - name: Print results
+        run: |
+          cat eval/results/ci-ollama.md | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "::group::per-question results"; cat eval/results/ci-ollama.json; echo "::endgroup::"
+      - uses: actions/upload-artifact@v4
+        with: {name: eval-ollama, path: eval/results/ci-ollama.*}
