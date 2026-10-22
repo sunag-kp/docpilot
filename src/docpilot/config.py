@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from enum import StrEnum
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
@@ -144,6 +144,9 @@ class Settings(BaseSettings):
     llm_temperature: float = Field(default=0.0, ge=0.0, le=1.0)
     llm_timeout_seconds: float = Field(default=60.0, gt=0)
     anthropic_api_key: SecretStr | None = None
+    # Opus 5.5 always thinks and thinking counts toward max_tokens, hence a larger budget.
+    anthropic_effort: Literal["low", "medium", "high", "xhigh", "max"] = "low"
+    anthropic_max_tokens: int = Field(default=8000, ge=256)
     ollama_base_url: str = "http://localhost:11434"
 
     # --- caching -------------------------------------------------------------------------
@@ -194,6 +197,12 @@ class Settings(BaseSettings):
         return self.max_upload_mb * 1024 * 1024
 
     @property
+    def resolved_llm_model(self) -> str:
+        if self.llm_model:
+            return self.llm_model
+        return _DEFAULT_MODELS.get(self.resolved_llm_provider, self.resolved_llm_provider.value)
+
+    @property
     def resolved_llm_provider(self) -> LLMProvider:
         """``auto`` picks a hosted provider only when its key exists; never requires one."""
         if self.llm_provider is not LLMProvider.AUTO:
@@ -203,6 +212,13 @@ class Settings(BaseSettings):
         if self.openai_api_key is not None:
             return LLMProvider.OPENAI
         return LLMProvider.EXTRACTIVE
+
+
+_DEFAULT_MODELS = {
+    LLMProvider.OLLAMA: "qwen2.5:1.5b",
+    LLMProvider.OPENAI: "gpt-4o-mini",
+    LLMProvider.ANTHROPIC: "anthropic-model",
+}
 
 
 @lru_cache(maxsize=1)
