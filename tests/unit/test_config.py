@@ -6,6 +6,13 @@ from pydantic import SecretStr, ValidationError
 from docpilot.config import EmbeddingProvider, Environment, LLMProvider, Settings
 
 
+@pytest.fixture(autouse=True)
+def _isolated_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Defaults must be asserted against a clean environment, not the CI job's env vars."""
+    for name in Settings.model_fields:
+        monkeypatch.delenv(name.upper(), raising=False)
+
+
 def make(**overrides: object) -> Settings:
     return Settings(_env_file=None, **overrides)  # type: ignore[arg-type]
 
