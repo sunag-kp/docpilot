@@ -156,19 +156,31 @@ The eval set is [`eval/`](eval/README.md): 8 fictional company documents rendere
 | Vector only (MiniLM-L6) | **0.917** | 0.979 | **0.944** |
 | Keyword only (BM25) | 0.812 | 0.938 | 0.862 |
 
-| Answer metric (default keyless extractive answerer) | Value |
-|---|---|
-| Fact recall (answer contains the expected facts) | 0.812 |
-| Correct refusals on the 8 unanswerable questions | 0.750 (6 / 8) |
-| False refusals on answerable questions | 0.000 |
-| Citation validity (cites only real sources, or refuses) | 1.000 |
+| Answer metric | Extractive (default, keyless) | `qwen2.5:3b` via Ollama (local, free) |
+|---|---|---|
+| Fact recall (answer contains the expected facts) | 0.812 | **0.938** |
+| Correct refusals on the 8 unanswerable questions | 0.750 (6 / 8) | **0.875 (7 / 8)** |
+| False refusals on the 48 answerable questions | **0.000** | 0.062 (3 / 48) |
+| Citation validity (cites only real sources, or refuses) | 1.000 | 1.000 |
+| Faithfulness (LLM judge `llama3.1:8b`: supported sentences / sentences) | not judged (it copies source sentences verbatim) | 0.902 |
+| Answer latency p50 / p95 | 20 / 130 ms (dev VM) | 8.8 / 12.4 s (CPU-only CI runner) |
 
-Source: [`eval/results/default.md`](eval/results/default.md). Two ablations were run on the same set:
+Sources: [`default.md`](eval/results/default.md) and [`ollama-qwen2.5-3b-judge-llama3.1-8b.md`](eval/results/ollama-qwen2.5-3b-judge-llama3.1-8b.md), the second produced by the CI workflow. The generator is a different model family from the judge, so the judge isn't grading its own output.
+
+I checked all 50 judged sentences by hand ([audit](eval/results/ollama-qwen2.5-3b-judge-llama3.1-8b-audit.md)):
+
+- 3 of the judge's 5 "unsupported" labels are false alarms on verbatim or near-verbatim sentences.
+- One of its 45 "supported" labels is debatable.
+- By my reading, 47–48 of the 50 sentences are supported, so 0.902 is a conservative figure.
+
+Two ablations were run on the same set:
 
 - **BM25 vs Postgres `ts_rank`** ([`ablation-ts-rank.md`](eval/results/ablation-ts-rank.md)): with `ts_rank`, keyword hit@1 drops from 0.812 to 0.750 and hybrid hit@5 from 1.000 to 0.979.
 - **MiniLM vs a lexical hashing embedder** ([`ablation-hashing-embedder.md`](eval/results/ablation-hashing-embedder.md)): vector hit@5 falls from 0.979 to 0.729, and hybrid falls to 0.896, below keyword search alone (0.938). Fusion only helps when both rankers are good, which is why the default embedder is a real semantic model.
 
-The [Evaluation workflow](.github/workflows/eval.yml) re-runs this on every relevant push. A second job generates answers with a local open-weights model (`qwen2.5:3b` via Ollama) and scores **faithfulness** with a different model family as the judge (`llama3.1:8b`). It publishes both to the [`eval-results`](https://github.com/sunag-kp/docpilot/tree/eval-results) branch.
+The [Evaluation workflow](.github/workflows/eval.yml) re-runs both evaluations on every relevant push and publishes the results to the [`eval-results`](https://github.com/sunag-kp/docpilot/tree/eval-results) branch.
+
+The judge labels each numbered sentence of the answer. An earlier version asked it to extract claims itself, and the small model produced artifacts instead, such as grading one claim both ways. The commit history records that fix.
 
 Caveats: 56 questions is a small set, and the extractive refusal threshold was tuned on the same questions (there is no held-out split). Read the answer metrics as indicative.
 
@@ -240,7 +252,7 @@ The honest picture from the eval: vector-only has slightly better hit@1 (0.917 v
 
 The zero-cost goal rules out a hosted LLM as the default. The built-in *extractive* answerer embeds every sentence of the retrieved passages, picks the ones closest in meaning to the question, and cites each one. If even the best sentence has cosine similarity below 0.4, it refuses.
 
-*Trade-off:* it cannot invent facts, but it also cannot paraphrase or combine them. That shows in the fact recall of 0.812.
+*Trade-off:* it cannot invent facts, but it also cannot paraphrase or combine them. A small local LLM (`qwen2.5:3b` via Ollama) lifts fact recall from 0.812 to 0.938, at a cost of about 9 seconds per answer on a CPU. It also gave 3 false refusals and a few sentences the sources don't support. Keyless and instant stays the default; Ollama is one setting away.
 
 The generative providers use a strict cite-only prompt: answer only from the numbered sources, cite `[n]`, or reply with the exact refusal sentence. Every answer, from any provider, is checked afterwards, and the API reports which sources were cited and whether any citation points at a source that doesn't exist (`grounded`). The providers are:
 
