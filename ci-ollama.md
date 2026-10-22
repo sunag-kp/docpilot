@@ -1,4 +1,4 @@
-# DocPilot evaluation — 2026-10-22T12:21:00+00:00
+# DocPilot evaluation — 2026-10-22T13:10:29+00:00
 
 Embedding `fastembed:sentence-transformers/all-MiniLM-L6-v2` · keyword ranker `bm25` · answerer `ollama:qwen2.5:3b` · judge `ollama:llama3.1:8b` · 56 questions (48 answerable, 8 unanswerable) · corpus 8 docs / 44 chunks (docx, markdown, pdf)
 
@@ -23,9 +23,9 @@ Embedding `fastembed:sentence-transformers/all-MiniLM-L6-v2` · keyword ranker `
 
 | Metric | Value |
 |---|---|
-| Fact recall (answer contains the expected facts) | 0.938 |
+| Fact recall (answer contains the expected facts) | 0.917 |
 | Correct refusals on unanswerable questions | 0.875 |
 | False refusals on answerable questions | 0.062 |
 | Citation validity (cites only real sources, or refuses) | 1.000 |
-| Faithfulness (LLM judge: supported claims / claims) | 0.860 (30 answers judged) |
-| Answer latency p50 / p95 (ms) | 5159 / 7368 |
+| Faithfulness (LLM judge: supported claims / claims) | 0.663 (46 answers judged) |
+| Answer latency p50 / p95 (ms) | 14559 / 19566 |

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-22T12:21:00+00:00",
+  "generated_at": "2026-10-22T13:10:29+00:00",
   "config": {
     "embedding": "fastembed:sentence-transformers/all-MiniLM-L6-v2",
     "llm": "ollama:qwen2.5:3b",
@@ -22,7 +22,7 @@
   "ingestion": {
     "documents": 8,
     "chunks": 44,
-    "seconds": 0.65,
+    "seconds": 0.94,
     "formats": [
       "docx",
       "markdown",
@@ -79,15 +79,15 @@
     }
   },
   "answers": {
-    "fact_recall": 0.938,
+    "fact_recall": 0.917,
     "false_refusal_rate": 0.062,
     "correct_refusal_rate": 0.875,
     "citation_validity": 1.0,
-    "faithfulness": 0.86,
-    "faithfulness_judged": 30,
-    "faithfulness_unparseable": 16,
-    "latency_ms_p50": 5158.8,
-    "latency_ms_p95": 7367.7
+    "faithfulness": 0.663,
+    "faithfulness_judged": 46,
+    "faithfulness_unparseable": 0,
+    "latency_ms_p50": 14558.9,
+    "latency_ms_p95": 19566.4
   },
   "questions": [
     {
@@ -105,8 +105,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Full-time employees accrue 1.75 days of paid time off for every month of service.\n\nNote: This claim is directly supported by source #1, which states that full-time employees accrue 1.75 days of paid time off for every month of service.",
-      "latency_ms": 11413.0
+      "judge_raw": "SUPPORTED: Full-time employees accrue 1.75 days of paid time off for every month of service",
+      "latency_ms": 30629.1
     },
     {
       "id": "pto-carryover",
@@ -122,9 +122,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. You may carry over up to 8 unused PTO days into the next calendar year. \nSUPPORTED (Source 2)\n\n2. Carried-over days expire on March 31 if they have not been used by then.\nSUPPORTED (Source 2)\n\nNote: There is no claim in the ANSWER about keeping unused vacation days, only PTO days.",
-      "latency_ms": 7100.3
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: You may carry over up to 8 unused PTO days into the next calendar year.\nUNSUPPORTED: Carried-over days expire on March 31 if they have not been used by then.",
+      "latency_ms": 18714.8
     },
     {
       "id": "pto-notice",
@@ -140,9 +140,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims made in the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. Requests for more than five consecutive days must be submitted at least three weeks in advance.\n SUPPORTED (Source #1)\n\n2. The request is for more than five consecutive days.\n SUPPORTED (Source #1)\n\n3. The request must be submitted in advance.\n UNSUPPORTED (The sources do not explicitly state that the request must be submitted in advance, only that it must be submitted at least three weeks in advance for more than five consecutive days.)\n\nNote: The ANSWER does not make any other claims that are not directly supported by the sources.",
-      "latency_ms": 4657.2
+      "faithfulness": 1.0,
+      "judge_raw": "SUPPORTED: Requests for more than five consecutive days must be submitted at least three weeks in advance.",
+      "latency_ms": 13129.0
     },
     {
       "id": "sick-days",
@@ -158,9 +158,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. Employees receive 12 paid sick days per calendar year.\n SUPPORTED (Source 1)\n\n2. Unused sick days do not carry over and are not paid out.\n SUPPORTED (Source 1)\n\n3. If you are sick for more than three consecutive working days, you must provide a doctor's note to HR.\n UNSUPPORTED (Source 1 does not mention this specific scenario)\n\n4. Please tell your manager as early as possible on the first day you are unwell.\n UNSUPPORTED (Source 1 does not mention this specific instruction)\n\nNote: The ANSWER also mentions \"per calendar year\", which is not explicitly stated in Source 1, but it is implied by the context. However, I have labeled it as SUPPORTED since it is a reasonable inference from the source.",
-      "latency_ms": 5931.7
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Employees receive 12 paid sick days per calendar year.\n\nUNSUPPORTED: Employees receive 12 paid sick days per calendar year.",
+      "latency_ms": 17615.5
     },
     {
       "id": "doctor-note",
@@ -172,13 +172,13 @@
         "vector": 1,
         "keyword": null
       },
-      "answer": "You need to show a medical certificate to HR if you are sick for more than three consecutive working days [3].",
+      "answer": "You must provide a doctor's note to HR if you are sick for more than three consecutive working days [3].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. You need to show a medical certificate to HR if you are sick for more than three consecutive working days.\n SUPPORTED: This claim is explicitly stated in source #3, which says \"If you are sick for more than three consecutive working days, you must provide a doctor's note to HR.\"",
-      "latency_ms": 4605.6
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: You must provide a doctor's note to HR if you are sick for more than three consecutive working days.\n\nUNSUPPORTED: You are sick for more than three consecutive working days.",
+      "latency_ms": 12620.4
     },
     {
       "id": "parental-primary",
@@ -194,9 +194,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims made in the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. The primary caregiver receives 18 weeks of fully paid parental leave.\n SUPPORTED (Source 1)\n\n2. The primary caregiver receives 18 weeks of fully paid parental leave [1].\n UNSUPPORTED (The citation [1] is present, but the claim is already stated in the previous sentence, making the citation redundant and the second occurrence of the claim unsupported)\n\nNote: The second occurrence of the claim is considered UNSUPPORTED because it is a repetition of the same information already stated in the previous sentence.",
-      "latency_ms": 5404.3
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: The primary caregiver receives 18 weeks of fully paid parental leave.\nUNSUPPORTED: The primary caregiver receives fully paid parental leave.",
+      "latency_ms": 15873.2
     },
     {
       "id": "parental-return",
@@ -212,9 +212,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Employees returning from parental leave may work a reduced 80 percent schedule at full pay for their first month back.\n\nNote: This claim is explicitly stated in source #1, which describes the benefits of returning from parental leave.",
-      "latency_ms": 4889.7
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Employees returning from parental leave may work a reduced 80 percent schedule at full pay for their first month back.\n\nUNSUPPORTED: Yes",
+      "latency_ms": 13294.9
     },
     {
       "id": "remote-days",
@@ -230,9 +230,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.5,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. Employees may work remotely up to three days per week\nSUPPORTED: Source 1 states \"Employees may work remotely up to three days per week.\"\n\n2. \nUNSUPPORTED: There is no mention of the number of days per week in the sources.",
-      "latency_ms": 6839.3
+      "faithfulness": 1.0,
+      "judge_raw": "SUPPORTED: Employees may work remotely up to three days per week",
+      "latency_ms": 19461.8
     },
     {
       "id": "home-office",
@@ -248,9 +248,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.8,
-      "judge_raw": "Here are the factual claims made in the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. The company will pay for your desk and chair at home.\n\t* SUPPORTED: The source explicitly states that new remote workers receive a one-time home office stipend of 400 euros for a desk, chair or monitor.\n2. The company will pay for a monitor at home.\n\t* SUPPORTED: The source explicitly states that new remote workers receive a one-time home office stipend of 400 euros for a desk, chair or monitor.\n3. The company will pay for your desk and chair at home as a one-time payment.\n\t* SUPPORTED: The source explicitly states that new remote workers receive a one-time home office stipend of 400 euros for a desk, chair or monitor.\n4. The company will reimburse internet costs up to 30 euros per month.\n\t* SUPPORTED: The source explicitly states that internet costs are reimbursed up to 30 euros per month.\n5. Working from another country for more than 20 working days per year requires approval from the People team.\n\t* UNSUPPORTED: The source does not mention the company paying for desks and chairs at home, but it does mention that working from another country for more than 20 working days per year requires approval from the People team.",
-      "latency_ms": 6412.2
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: The company will pay for your desk and chair at home.\nUNSUPPORTED: The company will pay for your desk and chair at home.",
+      "latency_ms": 16126.7
     },
     {
       "id": "abroad",
@@ -262,13 +262,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "Working from another country for more than 20 working days per year requires approval from the People team [1].",
+      "answer": "Working from another country for more than 20 working days per year requires approval from the People team due to tax and insurance rules [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Working from another country for more than 20 working days per year requires approval from the People team.\n\nNote that the ANSWER does not specify \"a few weeks\", but rather \"more than 20 working days per year\", which is explicitly stated in source #1.",
-      "latency_ms": 2061.7
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Working from another country for more than 20 working days per year requires approval from the People team due to tax and insurance rules.\n\nUNSUPPORTED: Working from another country for a few weeks.",
+      "latency_ms": 4932.6
     },
     {
       "id": "expense-deadline",
@@ -284,9 +284,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims made in the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. Expense claims must be submitted within 30 days in Ledgerly.\n SUPPORTED (Source 1)\n\n2. The user asked: Within how many days must expense claims be submitted in Ledgerly?\n UNSUPPORTED (this is a question, not a factual claim)\n\nNote: The second claim is not a factual claim, but rather a question being asked.",
-      "latency_ms": 6924.6
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Expense claims must be submitted within 30 days in Ledgerly.\nUNSUPPORTED: Ledgerly is the expense tool.",
+      "latency_ms": 19566.4
     },
     {
       "id": "meal-allowance",
@@ -302,9 +302,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: You can spend up to 45 euros per day on meals while travelling [2].",
-      "latency_ms": 4927.8
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: You can spend up to 45 euros per day on meals while travelling.\n\nUNSUPPORTED: The user asked about how much they can spend on food per day on a business trip.",
+      "latency_ms": 13993.4
     },
     {
       "id": "learning-budget",
@@ -316,13 +316,13 @@
         "vector": 1,
         "keyword": 2
       },
-      "answer": "Yes, employees have an annual learning budget of 1,200 euros for courses and conferences [1].",
+      "answer": "Yes, there is money for training courses and conferences. The annual learning budget for each employee is 1,200 euros, which can be used for courses, books, and conference tickets [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Employees have an annual learning budget of 1,200 euros for courses and conferences.\n\nThe source explicitly states that every employee has an annual learning budget of 1,200 euros for courses, books, and conference tickets.",
-      "latency_ms": 5682.6
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: There is money for training courses and conferences.\nUNSUPPORTED: The annual learning budget for each employee is 1,200 euros.",
+      "latency_ms": 16719.3
     },
     {
       "id": "password-length",
@@ -339,8 +339,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: All passwords must be at least 14 characters long.",
-      "latency_ms": 5390.0
+      "judge_raw": "SUPPORTED: All passwords must be at least 14 characters long.",
+      "latency_ms": 15344.2
     },
     {
       "id": "admin-mfa",
@@ -356,9 +356,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Administrators must use a hardware security key as their second factor.\n\nNote: This claim is explicitly stated in source #1, which says \"Administrators must use a hardware security key as their second factor; authenticator apps are not sufficient for admin access.\"",
-      "latency_ms": 4927.6
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Administrators must use a hardware security key as their second factor.\n\nUNSUPPORTED: Administrators must use a hardware security key as their second factor [1].",
+      "latency_ms": 14024.8
     },
     {
       "id": "lost-laptop",
@@ -374,9 +374,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.6,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. You must report the lost or stolen laptop to security@northwind.example within one hour.\n SUPPORTED: Source 1 states that if a laptop or phone with company data is lost or stolen, report it to security@northwind.example within one hour.\n\n2. The laptop was a work laptop.\n UNSUPPORTED: There is no information in the sources about the type of laptop being a work laptop.\n\n3. The laptop had company data on it.\n UNSUPPORTED: There is no information in the sources about the laptop having company data on it.\n\n4. The user must report the lost laptop within one hour.\n SUPPORTED: Source 1 states that if a laptop or phone with company data is lost or stolen, report it to security@northwind.example within one hour.\n\n5. The user must report the lost laptop to security@northwind.example.\n SUPPORTED: Source 1 states that if a laptop or phone with company data is lost or stolen, report it to security@northwind.example within one hour.",
-      "latency_ms": 5820.6
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: You must report the lost or stolen laptop to security@northwind.example within one hour.\n\nUNSUPPORTED: The laptop was left on the train.",
+      "latency_ms": 16569.5
     },
     {
       "id": "screen-lock",
@@ -393,8 +393,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Screens must lock automatically after five minutes of inactivity.",
-      "latency_ms": 4640.9
+      "judge_raw": "SUPPORTED: Screens must lock automatically after five minutes of inactivity.",
+      "latency_ms": 12974.2
     },
     {
       "id": "access-review",
@@ -411,8 +411,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 0.5,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Managers review the system access of their team members every quarter.\n\nThe source explicitly states that managers review system access every quarter (source 1).\n\nUNSUPPORTED: [1]",
-      "latency_ms": 5533.6
+      "judge_raw": "SUPPORTED: Managers review the system access of their team members every quarter.\n\nUNSUPPORTED: Every quarter",
+      "latency_ms": 15412.0
     },
     {
       "id": "critical-patch",
@@ -428,9 +428,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. Critical vulnerabilities must be patched within 7 days of disclosure.\n SUPPORTED (Source 1)\n\n2. Critical vulnerabilities must be patched within 7 days of disclosure.\n SUPPORTED (Source 1)\n\nNote that the ANSWER makes the same claim twice, but it is supported by the same source.",
-      "latency_ms": 5220.2
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Critical vulnerabilities must be patched within 7 days of disclosure.\nUNSUPPORTED: [1]",
+      "latency_ms": 14558.9
     },
     {
       "id": "phishing",
@@ -447,8 +447,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Simulated phishing exercises are run every month.\n\nExplanation: Source #1 explicitly states that \"We also run a simulated phishing exercise every month...\"",
-      "latency_ms": 4101.8
+      "judge_raw": "SUPPORTED: Simulated phishing exercises are run every month.",
+      "latency_ms": 11236.1
     },
     {
       "id": "api-key-header",
@@ -465,8 +465,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: The X-NW-Key header carries the API key.",
-      "latency_ms": 5589.9
+      "judge_raw": "SUPPORTED: The X-NW-Key header carries the API key.",
+      "latency_ms": 15582.6
     },
     {
       "id": "key-rotation",
@@ -478,13 +478,13 @@
         "vector": 3,
         "keyword": 1
       },
-      "answer": "The old key keeps working for 24 hours after a rotation [1].",
+      "answer": "The old key keeps working for 24 hours after a rotation so that deployments can be updated without downtime [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: The old key keeps working for 24 hours after a rotation.\n\nNote: This claim is explicitly stated in source #1, which is the only source that mentions key rotation.",
-      "latency_ms": 4816.5
+      "judge_raw": "SUPPORTED: The old key keeps working for 24 hours after a rotation so that deployments can be updated without downtime.",
+      "latency_ms": 13700.7
     },
     {
       "id": "growth-rate-limit",
@@ -501,8 +501,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: The Growth plan allows 600 requests per minute.",
-      "latency_ms": 5587.7
+      "judge_raw": "SUPPORTED: The Growth plan allows 600 requests per minute.",
+      "latency_ms": 15617.0
     },
     {
       "id": "too-many-requests",
@@ -514,13 +514,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "When the API says you're sending too many requests, your client should wait for the specified amount of time in the Retry-After header before retrying the request [1].",
+      "answer": "When the API says you're sending too many requests, your client should wait for the specified amount of time in the Retry-After header and then retry the request. This is indicated in the source material [1], which states that when you exceed the rate limit, the API responds with HTTP status 429 and a Retry-After header that tells you how many seconds to wait before retrying.",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: When the API says you're sending too many requests, your client should wait for the specified amount of time in the Retry-After header before retrying the request.\n\nNote: This claim is supported by source #1, which explicitly states that when the API responds with HTTP status 429, it includes a Retry-After header that tells you how many seconds to wait before retrying.",
-      "latency_ms": 5565.3
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: When the API says you're sending too many requests, your client should wait for the specified amount of time in the Retry-After header and then retry the request.\nUNSUPPORTED: This is indicated in the source material [1], which states that when you exceed the rate limit, the API responds with HTTP status 429 and a Retry-After header that tells you how many seconds to wait before retrying.",
+      "latency_ms": 17574.0
     },
     {
       "id": "nw-4012",
@@ -537,8 +537,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Error code NW-4012 means a webhook signature did not match the payload.\n \nNote: The claim is directly stated in source #3, which describes the error code NW-4012.",
-      "latency_ms": 5781.8
+      "judge_raw": "SUPPORTED: Error code NW-4012 means a webhook signature did not match the payload.",
+      "latency_ms": 15371.5
     },
     {
       "id": "nw-2003",
@@ -554,9 +554,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Error code NW-2003 means the monthly quota for your plan has been exhausted.\n\nSUPPORTED: Error code NW-2003 means the monthly quota for your plan has been exhausted. (This claim is supported by two sources: source 1 and source 2 do not mention NW-2003, but source 1 does mention NW-2003 and source 2 does not mention quotas, but source 1 does mention NW-2003 and source 4 does not mention quotas, but source 1 does mention NW-2003 and source 5 does not mention quotas, but source 1 does mention NW-2003 and source 3 does not mention quotas, but source 1 does mention NW-2003 and source 2 does mention quotas, but source 1 does mention NW-2003 and source 4 does mention quotas, but source 1 does mention NW-2003 and source 5 does not mention quotas, but source 1 does mention NW-2003 and source 3 does not mention quotas, but source 1 does mention NW-2003 and source 2 does mention quotas, but source 1 does mention NW-2003 and source 4 does mention quotas, but source 1 does mention NW-2003 and source 5 does not mention quotas, but source 1 does mention NW-2003 and source 3 does not mention quotas, but source 1 does mention NW-2003 and source 2 does mention quotas, but source 1 does mention NW-2003 and source 4 does mention quotas, but source 1 does mention NW-2003 and source 5 does not mention quotas, but source 1 does mention NW-2003 and source 3 does not mention quotas, but source 1 does mention NW-2003 and source 2 does mention quotas, but source 1 does mention NW-2003 and source 4 does mention quotas, but source 1 does mention NW-2003 and source 5 does not mention quotas, but source 1 does mention NW-2003 and source 3 does not mention quotas, but source 1 does mention NW-2003 and source 2 does mention quotas, but source 1 does mention NW-2003 and source 4 does mention quotas, but source 1 does mention NW-2003 and source 5 does not mention quotas, but source 1 does mention NW-2003 and source 3 does not mention quotas, but source 1 does mention NW-2003 and source 2 does mention quotas, but source 1 does mention NW-2003 and source 4 does mention quotas, but source 1 does mention NW-2003 and source 5 does not mention quotas, but source 1 does mention NW-200",
-      "latency_ms": 3819.7
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Error code NW-2003 means the monthly quota for your plan has been exhausted.\nUNSUPPORTED: the monthly quota for your plan has been exhausted",
+      "latency_ms": 9511.1
     },
     {
       "id": "page-size",
@@ -568,13 +568,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "The maximum page size for list endpoints is 200 items [1].",
+      "answer": "List endpoints use cursor-based pagination. Pass the next_cursor value from the previous response to fetch the next page. The maximum page size is 200 items and the default is 50. [1]",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.23076923076923078,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. The maximum page size for list endpoints is 200 items.\n SUPPORTED: This claim is explicitly stated in source #1.\n\n2. The default page size for list endpoints is 50.\n SUPPORTED: This claim is explicitly stated in source #1.\n\n3. List endpoints use cursor-based pagination.\n SUPPORTED: This claim is explicitly stated in source #1.\n\n4. The user must acknowledge the page within 5 minutes for a SEV1 incident.\n UNSUPPORTED: This claim is not mentioned in any of the sources.\n\n5. The user must acknowledge the page within 10 minutes for a SEV1 incident.\n UNSUPPORTED: This claim is not mentioned in any of the sources.\n\n6. PagerBell escalates automatically to the secondary on-call and then to the engineering manager if the page is not acknowledged within 10 minutes.\n UNSUPPORTED: This claim is not mentioned in any of the sources.\n\n7. SEV2 incidents page the primary on-call during business hours only; outside business hours they create a high-priority ticket instead.\n UNSUPPORTED: This claim is not mentioned in the ANSWER, but it is mentioned in source #2. However, it is not relevant to the question asked.\n\n8. Workspace owners can export all data at any time as CSV, JSON or Parquet files from the settings page.\n UNSUPPORTED: This claim is not relevant to the question asked.\n\n9. Exports of more than 10 GB are delivered as a download link by email.\n UNSUPPORTED: This claim is not relevant to the question asked.\n\n10. We publish the list of subprocessors on our trust page and notify customers 30 days before adding a new subprocessor.\n UNSUPPORTED: This claim is not relevant to the question asked.\n\n11. A written postmortem is required for every SEV1 and SEV2 incident and must be published within 5 business days.\n UNSUPPORTED: This claim is not relevant to the question asked.\n\n12. Postmortems are blameless: they focus on systems and processes, not on individuals.\n UNSUPPORTED: This claim is not relevant to the question asked.\n\n13. Every postmortem lists action items with an owner and a due date, and they are tracked in the reliability backlog.\n UNSUPPORTED: This claim is not relevant to the question asked.",
-      "latency_ms": 4807.5
+      "faithfulness": 1.0,
+      "judge_raw": "SUPPORTED: List endpoints use cursor-based pagination.\nSUPPORTED: Pass the next_cursor value from the previous response to fetch the next page.\nSUPPORTED: The maximum page size is 200 items.\nSUPPORTED: The default is 50.",
+      "latency_ms": 15253.7
     },
     {
       "id": "webhook-retries",
@@ -590,9 +590,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Failed webhooks are retried 8 times over 24 hours with exponential backoff.\nSUPPORTED: Each delivery is signed with HMAC-SHA256 and the signature is sent in the X-NW-Signature header; verify it before trusting the payload.\n\nNote that the ANSWER is entirely supported by source #1.",
-      "latency_ms": 7870.4
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Failed webhooks are retried 8 times over 24 hours with exponential backoff.\nUNSUPPORTED: Each delivery is signed with HMAC-SHA256 and the signature is sent in the X-NW-Signature header; verify it before trusting the payload.",
+      "latency_ms": 19445.0
     },
     {
       "id": "deprecation",
@@ -608,9 +608,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: The old version of the API is supported for 12 months after the deprecation notice.\n\nNote: This claim is explicitly stated in source #1, which mentions that \"deprecated versions are supported for 12 months after the deprecation notice\".",
-      "latency_ms": 6223.0
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: The old version of the API is supported for 12 months after the deprecation notice.\nUNSUPPORTED: The old version of the API is supported.",
+      "latency_ms": 16909.9
     },
     {
       "id": "enterprise-uptime",
@@ -626,9 +626,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. Northwind commits to a monthly uptime of 99.95 percent for Enterprise customers.\n SUPPORTED (Source 1)\n\nNote: The claim is explicitly stated in Source 1, which is the Service Level Agreement document.",
-      "latency_ms": 7367.7
+      "faithfulness": 1.0,
+      "judge_raw": "SUPPORTED: Northwind commits to a monthly uptime of 99.95 percent for Enterprise customers.",
+      "latency_ms": 20090.9
     },
     {
       "id": "credit-99",
@@ -646,7 +646,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 6728.0
+      "latency_ms": 19410.3
     },
     {
       "id": "credit-claim",
@@ -664,7 +664,7 @@
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 4299.9
+      "latency_ms": 12209.7
     },
     {
       "id": "p1-response",
@@ -680,9 +680,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims made in the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. Enterprise customers can raise P1 incidents 24 hours a day, 7 days a week: SUPPORTED (Source 1)\n2. and receive a first response within 15 minutes: SUPPORTED (Source 1)",
-      "latency_ms": 6205.2
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Enterprise customers can raise P1 incidents 24 hours a day, 7 days a week.\nUNSUPPORTED: and receive a first response within 15 minutes",
+      "latency_ms": 16490.7
     },
     {
       "id": "maintenance",
@@ -698,9 +698,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. Planned maintenance takes place on Sundays between 02:00 and 04:00 UTC. \nSUPPORTED (Source 1)\n\n2. \nUNSUPPORTED (Source 1 does not mention the specific time frame of 02:00 and 04:00 UTC, but it does mention the time frame of Sundays between 02:00 and 04:00 UTC)\n\nNote: The ANSWER does not mention the specific time frame of 02:00 and 04:00 UTC, but it does mention the time frame of Sundays between 02:00 and 04:00 UTC, which is supported by Source 1.",
-      "latency_ms": 6041.8
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Planned maintenance takes place on Sundays between 02:00 and 04:00 UTC.\nUNSUPPORTED: Planned maintenance happens during the specified time period.",
+      "latency_ms": 16271.7
     },
     {
       "id": "sev1-definition",
@@ -716,9 +716,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: SEV1 is a full outage of a core product or any confirmed loss of customer data.\n\nNote: This claim is directly supported by source [3], which defines SEV1 as a full outage of a core product or any confirmed loss of customer data.",
-      "latency_ms": 5633.5
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: SEV1 is a full outage of a core product or any confirmed loss of customer data.\n\nUNSUPPORTED: What counts as a SEV1 incident?",
+      "latency_ms": 15375.7
     },
     {
       "id": "ack-time",
@@ -730,13 +730,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "The primary on-call engineer must acknowledge the page within 5 minutes [1]. If not acknowledged within 10 minutes, PagerBell escalates automatically to the secondary on-call and then to the engineering manager [1].",
+      "answer": "The primary on-call engineer must acknowledge the page within 5 minutes [1]. If the page is not acknowledged within 5 minutes, the secondary on-call is paged [1]. If the secondary on-call does not acknowledge within 10 minutes, the engineering manager is notified [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\n1. The primary on-call engineer must acknowledge the page within 5 minutes. SUPPORTED (source 1)\n2. If not acknowledged within 10 minutes, PagerBell escalates automatically to the secondary on-call and then to the engineering manager. SUPPORTED (source 1)\n\nNote that the ANSWER also mentions \"urgent page\", but the sources do not explicitly mention the term \"urgent page\". However, the sources do describe the behavior for SEV1 incidents, which implies that the page is urgent. Therefore, I would label this claim as UNSUPPORTED, but it is a plausible inference based on the sources.",
-      "latency_ms": 6625.1
+      "faithfulness": 0.3333333333333333,
+      "judge_raw": "SUPPORTED: The primary on-call engineer must acknowledge the page within 5 minutes.\nUNSUPPORTED: If the page is not acknowledged within 5 minutes, the secondary on-call is paged.\nUNSUPPORTED: If the secondary on-call does not acknowledge within 10 minutes, the engineering manager is notified.",
+      "latency_ms": 17833.8
     },
     {
       "id": "status-page",
@@ -753,8 +753,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: The status page must be updated within 15 minutes of the incident being declared.\nSUPPORTED: The status page must be updated at least every 30 minutes until it is resolved.\n\nNote that the ANSWER also includes the phrase \"until it is resolved\", which is not explicitly stated in the sources, but is a reasonable inference based on the requirement to update the status page \"until it is resolved\". However, I have labeled this claim as SUPPORTED because it is a logical extension of the requirement to update the status page at least every 30 minutes.",
-      "latency_ms": 6268.6
+      "judge_raw": "SUPPORTED: The status page must be updated within 15 minutes of the incident being declared.\nSUPPORTED: The status page must be updated at least every 30 minutes until it is resolved.",
+      "latency_ms": 16080.4
     },
     {
       "id": "postmortem",
@@ -770,9 +770,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. A written postmortem is required for every SEV1 and SEV2 incident: SUPPORTED (Source 1)\n2. A written postmortem is required for every SEV1 incident: SUPPORTED (Source 1)\n3. A written postmortem is required for every SEV2 incident: SUPPORTED (Source 1)\n4. A written postmortem must be published within 5 business days: SUPPORTED (Source 1)\n5. A written postmortem must be published within 5 business days for SEV1 and SEV2 incidents: SUPPORTED (Source 1)\n6. A written postmortem focuses on systems and processes, not on individuals: SUPPORTED (Source 1)\n7. Every postmortem lists action items with an owner and a due date: SUPPORTED (Source 1)\n8. Every postmortem is tracked in the reliability backlog: SUPPORTED (Source 1)\n\nNote that the ANSWER implies that a written postmortem is required for every SEV1 and SEV2 incident, but Source 2 only mentions that SEV1 and SEV2 are the severity levels for incidents, without explicitly stating that a written postmortem is required for every SEV1 and SEV2 incident. However, Source 1 does explicitly state that a written postmortem is required for every SEV1 and SEV2 incident, so I have labeled this claim as SUPPORTED.",
-      "latency_ms": 5293.4
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: A written postmortem is required for every SEV1 and SEV2 incident.\nUNSUPPORTED: A written postmortem is required for every SEV1 incident.\nUNSUPPORTED: A written postmortem is required for every SEV2 incident.\nSUPPORTED: A written postmortem must be published within 5 business days.",
+      "latency_ms": 13520.3
     },
     {
       "id": "growth-price",
@@ -788,9 +788,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 0.6666666666666666,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. The Growth plan costs 12 US dollars per user per month, billed annually.\n SUPPORTED: Source #1 states that the Growth plan costs 12 US dollars per user per month, billed annually.\n\n2. The Growth plan costs 12 US dollars per user per month.\n UNSUPPORTED: Source #1 states that the Growth plan costs 12 US dollars per user per month, billed annually, but does not mention the cost per month without the annual billing.\n\n3. The Growth plan is billed annually.\n SUPPORTED: Source #1 states that the Growth plan is billed annually.\n\nNote that the ANSWER only makes one claim about the Growth plan, which is supported by Source #1.",
-      "latency_ms": 5876.3
+      "faithfulness": 1.0,
+      "judge_raw": "SUPPORTED: The Growth plan costs 12 US dollars per user per month, billed annually",
+      "latency_ms": 17163.0
     },
     {
       "id": "eu-region",
@@ -802,13 +802,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "European customer data is hosted in Frankfurt [1].",
+      "answer": "The EU region is hosted in Frankfurt [1].",
       "refused": false,
       "grounded": true,
       "facts_found": true,
       "faithfulness": 0.5,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: European customer data is hosted in Frankfurt.\nUNSUPPORTED: [1] (this is a citation marker, not a factual claim)",
-      "latency_ms": 3781.1
+      "judge_raw": "SUPPORTED: The EU region is hosted in Frankfurt.\nUNSUPPORTED: European customer data.",
+      "latency_ms": 10639.0
     },
     {
       "id": "export-formats",
@@ -824,9 +824,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. Workspace data can be exported in CSV format.\nSUPPORTED (Source 1)\n\n2. Workspace data can be exported in JSON format.\nSUPPORTED (Source 1)\n\n3. Workspace data can be exported in Parquet format.\nSUPPORTED (Source 1)\n\nThere are no UNSUPPORTED claims in this ANSWER, as all the formats mentioned are explicitly stated in Source 1.",
-      "latency_ms": 4278.8
+      "faithfulness": 1.0,
+      "judge_raw": "SUPPORTED: Workspace data can be exported in CSV, JSON, and Parquet formats.",
+      "latency_ms": 11868.0
     },
     {
       "id": "after-cancel",
@@ -842,9 +842,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims made in the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. When you stop paying and close your account, your data is kept for 30 days so that you can reactivate or export it: SUPPORTED (Source 5)\n2. after which it is permanently deleted: UNSUPPORTED (Source 5 only mentions that data is kept for 30 days after cancellation, but does not explicitly state what happens after that)",
-      "latency_ms": 5158.8
+      "faithfulness": 0.6666666666666666,
+      "judge_raw": "SUPPORTED: When you stop paying and close your account, your data is kept for 30 days so that you can reactivate or export it, after which it is permanently deleted.\n\nUNSUPPORTED: Your data is kept for 30 days so that you can reactivate or export it, after which it is permanently deleted.\n\nSUPPORTED: After cancellation your data is kept for 30 days so that you can reactivate or export it, and then it is permanently deleted.",
+      "latency_ms": 13427.9
     },
     {
       "id": "sso",
@@ -860,9 +860,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": 1.0,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: The Enterprise plan includes SAML single sign-on.\n\nNote: This claim is explicitly stated in source #1, which says \"SAML single sign-on and SCIM user provisioning are available on the Enterprise plan only.\"",
-      "latency_ms": 4983.9
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: The Enterprise plan includes SAML single sign-on.\nUNSUPPORTED: The Enterprise plan is the only plan that includes SAML single sign-on.",
+      "latency_ms": 14646.1
     },
     {
       "id": "backup-retention",
@@ -878,9 +878,9 @@
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\n1. Database backups are kept for 35 days. SUPPORTED (Source 1)\n2. Database backups are encrypted with AES-256. UNSUPPORTED (Source 1 mentions encryption, but does not specify the type)\n3. Database backups are stored in a different region from the primary database. SUPPORTED (Source 1)\n4. Database backups are kept for 35 days. SUPPORTED (Source 2)\n5. Database backups are kept for 35 days. SUPPORTED (Source 3)\n6. Database backups are kept for 35 days. SUPPORTED (Source 4)\n7. Database backups are kept for 35 days. SUPPORTED (Source 5)\n\nNote that the ANSWER makes the same claim multiple times, but it is supported by multiple sources.",
-      "latency_ms": 3650.5
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Database backups are kept for 35 days.\nUNSUPPORTED: Database backups are encrypted with AES-256 and stored in a different region from the primary database.",
+      "latency_ms": 10506.7
     },
     {
       "id": "audit-logs",
@@ -897,8 +897,8 @@
       "grounded": true,
       "facts_found": true,
       "faithfulness": 0.5,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: Audit logs are retained for 1 year by default.\nUNSUPPORTED: Audit logs are retained for 7 years on the Enterprise plan. (The source explicitly states that audit logs are retained for 7 years on the Enterprise plan, but it does not mention the 1-year default retention period.)",
-      "latency_ms": 4983.6
+      "judge_raw": "SUPPORTED: Audit logs are retained for 1 year by default.\nUNSUPPORTED: Audit logs are retained for 7 years on the Enterprise plan.",
+      "latency_ms": 14148.6
     },
     {
       "id": "gdpr",
@@ -910,13 +910,13 @@
         "vector": 1,
         "keyword": 2
       },
-      "answer": "We fulfil data subject requests such as access or erasure within 30 days [1].",
+      "answer": "When a workspace is deleted, its data is removed from production systems immediately and purged from backups within 35 days as the backups expire [2].",
       "refused": false,
       "grounded": true,
-      "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\n1. We fulfil data subject requests such as access or erasure within 30 days. \nSUPPORTED (Source 1)\n\n2. The user asked about deleting personal data.\nUNSUPPORTED (no source mentions the user asking about deleting personal data)\n\nNote: The ANSWER only mentions the time frame for fulfilling data subject requests, but does not explicitly mention the user asking about deleting personal data.",
-      "latency_ms": 3840.2
+      "facts_found": false,
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: When a workspace is deleted, its data is removed from production systems immediately.\nUNSUPPORTED: and purged from backups within 35 days as the backups expire",
+      "latency_ms": 10972.7
     },
     {
       "id": "friday-deploys",
@@ -928,13 +928,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "I don't know based on the provided documents.",
+      "answer": "I don't know based on the provided documents. [1]",
       "refused": true,
       "grounded": true,
       "facts_found": false,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 4131.0
+      "latency_ms": 12331.8
     },
     {
       "id": "review-approvals",
@@ -946,13 +946,13 @@
         "vector": 1,
         "keyword": 1
       },
-      "answer": "A pull request to the main branch needs approval from two reviewers, with at least one of them being a code owner of the changed files. [1]",
+      "answer": "Every pull request to the main branch needs approval from two reviewers, and at least one of them must be a code owner of the changed files. [1]",
       "refused": false,
       "grounded": true,
       "facts_found": true,
-      "faithfulness": null,
-      "judge_raw": "Here are the factual claims from the ANSWER, labeled as SUPPORTED or UNSUPPORTED:\n\n1. A pull request to the main branch needs approval from two reviewers.\n SUPPORTED (source 1)\n2. At least one of them must be a code owner of the changed files.\n SUPPORTED (source 1)\n\nNote that the ANSWER does not make any claims that are not supported by the sources.",
-      "latency_ms": 6401.5
+      "faithfulness": 0.5,
+      "judge_raw": "SUPPORTED: Every pull request to the main branch needs approval from two reviewers, and at least one of them must be a code owner of the changed files.\nUNSUPPORTED: [1]",
+      "latency_ms": 17516.3
     },
     {
       "id": "u-ceo-salary",
@@ -970,7 +970,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 2674.2
+      "latency_ms": 7382.0
     },
     {
       "id": "u-dental",
@@ -988,7 +988,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 4830.2
+      "latency_ms": 14375.6
     },
     {
       "id": "u-student",
@@ -1006,7 +1006,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 3858.2
+      "latency_ms": 11334.6
     },
     {
       "id": "u-capital",
@@ -1024,7 +1024,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 2.6
+      "latency_ms": 5.9
     },
     {
       "id": "u-eu-cloud",
@@ -1041,8 +1041,8 @@
       "grounded": true,
       "facts_found": null,
       "faithfulness": 0.5,
-      "judge_raw": "Here are the factual claims made in the ANSWER, one per line, with each claim labeled as SUPPORTED or UNSUPPORTED:\n\nSUPPORTED: The Frankfurt data center is run by [1].\nUNSUPPORTED: [1] is not specified in the sources.",
-      "latency_ms": 3688.5
+      "judge_raw": "SUPPORTED: The Frankfurt data center is run by a cloud provider.\nUNSUPPORTED: [1]",
+      "latency_ms": 10813.8
     },
     {
       "id": "u-contractor-sick",
@@ -1060,7 +1060,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 4733.8
+      "latency_ms": 13791.7
     },
     {
       "id": "u-graphql",
@@ -1078,7 +1078,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 4377.1
+      "latency_ms": 13005.8
     },
     {
       "id": "u-office",
@@ -1096,7 +1096,7 @@
       "facts_found": null,
       "faithfulness": null,
       "judge_raw": null,
-      "latency_ms": 4022.1
+      "latency_ms": 11800.9
     }
   ]
 }
