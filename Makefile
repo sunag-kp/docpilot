@@ -51,6 +51,10 @@ test: ## Unit + integration tests with coverage (starts infra if needed)
 test-unit: ## Fast unit tests only (no Docker needed)
 	$(UV) run pytest -m "not integration"
 
+.PHONY: smoke
+smoke: ## End-to-end smoke test against the running stack
+	$(UV) run python scripts/smoke_test.py
+
 .PHONY: migrate
 migrate: ## Apply database migrations against DATABASE_URL
 	$(UV) run alembic upgrade head
