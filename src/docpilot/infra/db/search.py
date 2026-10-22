@@ -22,6 +22,8 @@ from docpilot.infra.db.tables import documents, make_chunks_table
 # term-frequency saturation (k1) and length normalisation (b) with the chunk token count.
 # Cost grows with the number of matching chunks; beyond ~10^5 chunks per tenant a
 # precomputed term-statistics table (or ParadeDB pg_search) would replace this.
+# Equal scores are ordered by document and position, never by random ids, so results
+# (and the evaluation) are reproducible.
 _BM25_SQL = """
 WITH terms AS (
     SELECT DISTINCT lexeme FROM unnest(to_tsvector('english', :query))
@@ -62,7 +64,7 @@ CROSS JOIN corpus
 WHERE true {document_filter}
 GROUP BY m.id, m.document_id, m.chunk_index, m.text, m.section, m.page_start, m.page_end,
          d.filename
-ORDER BY rank DESC, m.id
+ORDER BY rank DESC, d.filename, m.chunk_index
 LIMIT :limit
 """
 
@@ -80,7 +82,7 @@ JOIN documents d ON d.id = c.document_id
 WHERE q.query IS NOT NULL
   AND c.tenant_id = :tenant_id
   {document_filter}
-ORDER BY rank DESC, c.id
+ORDER BY rank DESC, d.filename, c.chunk_index
 LIMIT :limit
 """
 
