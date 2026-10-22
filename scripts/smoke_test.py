@@ -2,8 +2,9 @@
 
     uv run python scripts/smoke_test.py --base-url http://localhost:8000
 
-Signs up a fresh tenant, uploads a document, waits for the worker to index it and checks
-the chunks. Exits non-zero on any failure, so CI can gate on it.
+Signs up a fresh tenant, uploads a document, waits for the worker to index it, checks the
+chunks, then asks questions over JSON and SSE. Exits non-zero on any failure, so CI can
+gate on it.
 """
 
 from __future__ import annotations
@@ -37,10 +38,14 @@ def main() -> int:
         ready.raise_for_status()
 
         email = f"smoke-{uuid.uuid4().hex[:8]}@example.com"
-        token = client.post(
-            "/v1/auth/signup",
-            json={"tenant_name": "Smoke", "email": email, "password": "smoke-test-pass"},
-        ).raise_for_status().json()["access_token"]
+        token = (
+            client.post(
+                "/v1/auth/signup",
+                json={"tenant_name": "Smoke", "email": email, "password": "smoke-test-pass"},
+            )
+            .raise_for_status()
+            .json()["access_token"]
+        )
         headers = {"Authorization": f"Bearer {token}"}
 
         marker = uuid.uuid4().hex.encode()
@@ -67,6 +72,34 @@ def main() -> int:
         sections = [c["section"] for c in chunks]
         print("chunks:", sections)
         if sections != ["Smoke Test Handbook > Vacation", "Smoke Test Handbook > Security"]:
+            return 1
+
+        answer = (
+            client.post(
+                "/v1/query",
+                json={"question": "How often must passwords be rotated?"},
+                headers=headers,
+            )
+            .raise_for_status()
+            .json()
+        )
+        print("answer:", answer["answer"], "| cited:", answer["cited_numbers"])
+        if "90 days" not in answer["answer"] or not answer["cited_numbers"]:
+            return 1
+
+        with client.stream(
+            "POST",
+            "/v1/query/stream",
+            json={"question": "How much vacation do employees accrue?"},
+            headers=headers,
+        ) as stream:
+            events = [
+                line.removeprefix("event: ")
+                for line in stream.iter_lines()
+                if line.startswith("event: ")
+            ]
+        print("sse events:", events[0], "...", events[-1], f"({len(events)} total)")
+        if events[0] != "meta" or events[-1] != "done":
             return 1
     print("SMOKE TEST PASSED")
     return 0
