@@ -152,9 +152,9 @@ The eval set is [`eval/`](eval/README.md): 8 fictional company documents rendere
 
 | Retrieval mode | hit@1 | hit@5 | MRR@10 |
 |---|---|---|---|
-| **Hybrid (BM25 + vector, RRF)** | 0.896 | **1.000** | 0.934 |
+| **Hybrid (BM25 + vector, RRF)** | 0.896 | **1.000** | 0.935 |
 | Vector only (MiniLM-L6) | **0.917** | 0.979 | **0.944** |
-| Keyword only (BM25) | 0.812 | 0.938 | 0.867 |
+| Keyword only (BM25) | 0.812 | 0.938 | 0.862 |
 
 | Answer metric (default keyless extractive answerer) | Value |
 |---|---|
@@ -166,7 +166,7 @@ The eval set is [`eval/`](eval/README.md): 8 fictional company documents rendere
 Source: [`eval/results/default.md`](eval/results/default.md). Two ablations were run on the same set:
 
 - **BM25 vs Postgres `ts_rank`** ([`ablation-ts-rank.md`](eval/results/ablation-ts-rank.md)): with `ts_rank`, keyword hit@1 drops from 0.812 to 0.750 and hybrid hit@5 from 1.000 to 0.979.
-- **MiniLM vs a lexical hashing embedder** ([`ablation-hashing-embedder.md`](eval/results/ablation-hashing-embedder.md)): vector hit@5 falls from 0.979 to 0.729, and hybrid falls to 0.875, below keyword search alone (0.938). Fusion only helps when both rankers are good, which is why the default embedder is a real semantic model.
+- **MiniLM vs a lexical hashing embedder** ([`ablation-hashing-embedder.md`](eval/results/ablation-hashing-embedder.md)): vector hit@5 falls from 0.979 to 0.729, and hybrid falls to 0.896, below keyword search alone (0.938). Fusion only helps when both rankers are good, which is why the default embedder is a real semantic model.
 
 The [Evaluation workflow](.github/workflows/eval.yml) re-runs this on every relevant push. A second job generates answers with a local open-weights model (`qwen2.5:3b` via Ollama) and scores **faithfulness** with a different model family as the judge (`llama3.1:8b`). It publishes both to the [`eval-results`](https://github.com/sunag-kp/docpilot/tree/eval-results) branch.
 
@@ -311,7 +311,7 @@ make load-test   # Locust query + ingestion runs, results to benchmarks/results/
 cd ui && npm ci && npm run dev    # UI on :5173, proxied to the API on :8000
 ```
 
-The suite has 227 tests at 96% branch coverage, and CI fails below 80%. Integration tests run against real Postgres + pgvector, Redis, Redpanda and MinIO in CI service containers and use their own database. CI runs four jobs:
+The suite has 229 tests at 95% branch coverage, and CI fails below 80%. Integration tests run against real Postgres + pgvector, Redis, Redpanda and MinIO in CI service containers and use their own database. CI runs four jobs:
 
 1. lint and type checks;
 2. tests;

@@ -155,3 +155,17 @@ async def test_bm25_weights_rare_terms_and_ts_rank_baseline_still_works(
     assert {c.section for c in baseline} == {"A", "B"}
     with pytest.raises(ValueError, match="unknown keyword ranker"):
         PgChunkSearch(engine, 384, keyword_ranker="tf-idf")
+
+
+@pytest.mark.parametrize("ranker", ["bm25", "ts_rank"])
+async def test_keyword_ties_are_ordered_by_document_not_random_ids(
+    engine: AsyncEngine, uow_factory: Callable[[], UnitOfWork], ranker: str
+) -> None:
+    text = "Badge renewal happens every year at the front desk."
+    tenant, _ = await seed(
+        uow_factory, HashingEmbedder(384), [("Zulu", text), ("Alpha", text), ("Mike", text)]
+    )
+    search = PgChunkSearch(engine, 384, keyword_ranker=ranker)
+    for _ in range(3):
+        hits = await search.keyword_search(tenant, "When is badge renewal?", 5)
+        assert [h.filename for h in hits] == ["alpha.md", "mike.md", "zulu.md"]
