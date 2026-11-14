@@ -1,0 +1,61 @@
+name: AI stack (make up-ai)
+
+# Runs exactly what a new Codespace runs on start: `make up-ai` (full stack + Ollama with
+# qwen2.5:3b), then the end-to-end smoke test and a written answer from the local model.
+on:
+  pull_request:
+    paths:
+      - "Makefile"
+      - "docker-compose.yml"
+      - ".devcontainer/**"
+      - "src/docpilot/infra/llm/**"
+      - ".github/workflows/ai-stack.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-stack-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.11.32"
+
+jobs:
+  up-ai:
+    name: make up-ai + smoke test with the local model
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: make up-ai
+        run: make up-ai
+      - name: Load the model into memory
+        run: docker compose --profile ai exec -T ollama ollama run qwen2.5:3b "Reply with OK."
+      - name: Smoke test (answers by the local model)
+        run: uv run --no-project --with httpx python scripts/smoke_test.py --base-url http://localhost:8000
+      - name: A written answer over a real document
+        run: |
+          uv run --no-project --with httpx python - <<'PY'
+          import time, uuid, httpx
+          c = httpx.Client(base_url="http://localhost:8000", timeout=180)
+          token = c.post("/v1/auth/signup", json={"tenant_name": "AI", "email": f"ai-{uuid.uuid4().hex[:8]}@example.com", "password": "ai-stack-check"}).raise_for_status().json()["access_token"]
+          h = {"Authorization": f"Bearer {token}"}
+          with open("eval/corpus/employee-handbook.md", "rb") as f:
+              doc = c.post("/v1/documents", files={"file": ("employee-handbook.md", f)}, headers=h).raise_for_status().json()
+          for _ in range(120):
+              if c.get(f"/v1/documents/{doc['id']}", headers=h).json()["status"] == "ready":
+                  break
+              time.sleep(1)
+          a = c.post("/v1/query", json={"question": "Summarize the paid time off policy."}, headers=h).raise_for_status().json()
+          print(a["model"], f"{a['latency_ms']:.0f} ms", "|", a["answer"])
+          assert a["model"] == "ollama:qwen2.5:3b", a["model"]
+          assert not a["refused"] and a["cited_numbers"], a
+          PY
+      - name: Logs
+        if: failure()
+        run: docker compose --profile ai logs --tail 200 api ollama
