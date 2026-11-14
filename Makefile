@@ -20,9 +20,18 @@ up: ## Build and start the full stack (API, worker, infra, observability)
 	@echo "Grafana:    http://localhost:3000      Jaeger: http://localhost:16686"
 	@echo "Prometheus: http://localhost:9090      MinIO:  http://localhost:9001"
 
+AI_MODEL ?= qwen2.5:3b
+
+.PHONY: up-ai
+up-ai: ## Full stack plus a free local LLM (Ollama) that writes cited answers
+	LLM_PROVIDER=ollama LLM_MODEL=$(AI_MODEL) LLM_TIMEOUT_SECONDS=300 \
+		$(COMPOSE) --profile ai up --build -d --wait
+	$(COMPOSE) --profile ai exec -T ollama ollama pull $(AI_MODEL)
+	@echo "UI + API:   http://localhost:8000      (answers by $(AI_MODEL), 10-30 s each on CPU)"
+
 .PHONY: down
 down: ## Stop the stack and remove volumes
-	$(COMPOSE) down -v --remove-orphans
+	$(COMPOSE) --profile ai down -v --remove-orphans
 
 .PHONY: infra
 infra: ## Start only the infrastructure needed by integration tests

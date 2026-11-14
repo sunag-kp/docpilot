@@ -1,7 +1,8 @@
 {
   // Runs the complete stack (API, workers, Postgres, Redis, Redpanda, MinIO, Prometheus,
   // Grafana, Jaeger) in a GitHub Codespace, free within the monthly Codespaces allowance.
-  // The UI opens on port 8000 once `make up` reports every service healthy.
+  // `make up-ai` adds a free local LLM (Ollama, qwen2.5:3b) so answers are written, not
+  // only quoted. The UI opens on port 8000 once every service is healthy.
   "name": "DocPilot",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": {
@@ -11,7 +12,7 @@
     "cpus": 4,
     "memory": "16gb"
   },
-  "postStartCommand": "make up",
+  "postStartCommand": "make up-ai",
   "forwardPorts": [8000, 3000, 16686],
   "portsAttributes": {
     "8000": {"label": "DocPilot (UI + API)", "onAutoForward": "openBrowser"},

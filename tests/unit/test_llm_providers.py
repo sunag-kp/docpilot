@@ -57,7 +57,7 @@ async def test_ollama_streams_ndjson_and_sends_prompt() -> None:
     assert isinstance(messages, list)
     assert messages[0]["role"] == "system"
     assert '<source id="1"' in messages[1]["content"]
-    assert seen["options"] == {"temperature": 0.0, "num_predict": 300}
+    assert seen["options"] == {"temperature": 0.0, "num_predict": 300, "num_ctx": 4096}
     await llm.aclose()
 
 

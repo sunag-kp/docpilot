@@ -93,19 +93,44 @@ export class HttpApi implements DocPilotApi {
   }
 
   async ask(question: string, handlers: StreamHandlers, signal?: AbortSignal): Promise<void> {
-    const response = await fetch(`${this.base}/v1/query/stream`, {
-      method: "POST",
-      headers: this.headers({ "Content-Type": "application/json", Accept: "text/event-stream" }),
-      body: JSON.stringify({ question }),
-      signal,
-    });
-    if (!response.ok || !response.body) throw await failure(response);
-    for await (const event of readSse(response.body)) {
-      const data: unknown = JSON.parse(event.data);
-      if (event.event === "meta") handlers.onMeta(data as AnswerMeta);
-      else if (event.event === "token") handlers.onToken((data as { text: string }).text);
-      else if (event.event === "done") handlers.onDone(data as AnswerDone);
-      else if (event.event === "error") throw new ApiError(503, (data as { detail: string }).detail);
+    let finished = false;
+    try {
+      const response = await fetch(`${this.base}/v1/query/stream`, {
+        method: "POST",
+        headers: this.headers({ "Content-Type": "application/json", Accept: "text/event-stream" }),
+        body: JSON.stringify({ question }),
+        signal,
+      });
+      if (!response.ok || !response.body) throw await failure(response);
+      for await (const event of readSse(response.body)) {
+        const data: unknown = JSON.parse(event.data);
+        if (event.event === "meta") handlers.onMeta(data as AnswerMeta);
+        else if (event.event === "token") handlers.onToken((data as { text: string }).text);
+        else if (event.event === "done") {
+          finished = true;
+          handlers.onDone(data as AnswerDone);
+        } else if (event.event === "error") throw new ApiError(503, (data as { detail: string }).detail);
+      }
+    } catch (err) {
+      // API errors and cancellations are real outcomes; anything else (a proxy that drops or
+      // mangles the event stream) falls through to the plain JSON endpoint below.
+      if (err instanceof ApiError || signal?.aborted) throw err;
     }
+    if (!finished) await this.askOnce(question, handlers, signal);
+  }
+
+  /** Same answer without streaming, for networks that break server-sent events. */
+  private async askOnce(question: string, handlers: StreamHandlers, signal?: AbortSignal) {
+    const answer = await this.request<AnswerDone & { citations: AnswerMeta["citations"] }>(
+      "/v1/query",
+      {
+        method: "POST",
+        headers: this.headers({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ question }),
+        signal,
+      },
+    );
+    handlers.onMeta({ ...answer, citations: answer.citations });
+    handlers.onDone(answer);
   }
 }
