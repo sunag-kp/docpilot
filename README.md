@@ -94,6 +94,7 @@ Requires Docker (with Compose) and `make`. No accounts or keys.
 ```bash
 git clone https://github.com/sunag-kp/docpilot && cd docpilot
 make up      # builds the image (UI + API + embedding model baked in) and starts everything
+make up-ai   # the same plus a free local LLM (Ollama, qwen2.5:3b) that writes cited answers
 ```
 
 | What | Where |
@@ -287,7 +288,8 @@ Answers flow one way, SSE passes through proxies and `curl`, and the browser rec
 
 - **Full app, on demand: GitHub Codespaces.**
   - Click **Open in GitHub Codespaces** above, or go to **Code → Codespaces → Create codespace on main**.
-  - The [dev container](.devcontainer/devcontainer.json) runs `make up` on a 4-core machine and opens the UI on port 8000 once every service is healthy. The first start takes about 10 minutes, mostly building the image.
+  - The [dev container](.devcontainer/devcontainer.json) runs `make up-ai` on a 4-core machine, so answers are written by a free local model (Ollama, `qwen2.5:3b`), and opens the UI on port 8000 once every service is healthy. The first start takes 10–15 minutes, mostly building the image and downloading the ~2 GB model; AI answers then take 10–30 seconds each on CPU.
+  - [`docs/DEMO.md`](docs/DEMO.md) is a five-minute demo script with sample documents and questions.
   - It's free within GitHub's monthly allowance (120 core-hours, about 30 hours on 4 cores). It stops after 30 idle minutes and resumes where it left off.
   - To share it, set port 8000's visibility to **Public** in the Ports tab.
 - **Always on, no server: GitHub Pages.** The [Pages workflow](.github/workflows/pages.yml) publishes the browser demo and the API reference on every push to `main`.

@@ -10,6 +10,9 @@ import httpx
 from docpilot.domain.answers import GenerationRequest
 from docpilot.domain.errors import GenerationUnavailableError
 
+# Room for the system prompt, five ~320-token sources and the answer; Ollama defaults lower.
+_CONTEXT_TOKENS = 4096
+
 
 class OllamaLLM:
     def __init__(
@@ -40,7 +43,11 @@ class OllamaLLM:
                 {"role": "system", "content": request.system},
                 {"role": "user", "content": request.render_user_message()},
             ],
-            "options": {"temperature": request.temperature, "num_predict": request.max_tokens},
+            "options": {
+                "temperature": request.temperature,
+                "num_predict": request.max_tokens,
+                "num_ctx": _CONTEXT_TOKENS,
+            },
         }
         try:
             async with self._client.stream("POST", "/api/chat", json=payload) as response:
